@@ -17,25 +17,19 @@ struct Point {
         y = _y;
     }
 
-    Point(const Point &p2) : x(p2.x), y(p2.y) {
-    }
-
-    Point() {
-        x = 0;
-        y = 0;
-    }
 };
 
 struct Chunk {
     Point pos;
     int data;
 
-    Chunk(Point _pos, int _data) {
-        pos = _pos;
+    Chunk(Point _pos, int _data)
+            : pos(_pos) {
         data = _data;
     }
 
-    Chunk() {
+    Chunk()
+            : pos(0, 0) {
         data = 0;
     }
 

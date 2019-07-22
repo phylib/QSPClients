@@ -17,28 +17,26 @@
 const unsigned MAX_LEVEL = 4;
 
 
-
 class QuadTree {
 
 public:
-    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level) {
-        this->topLeft = _topLeft;
-        this->botRight = _bottomRight;
+    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level)
+            : topLeft(_topLeft), botRight(_bottomRight) {
+
         this->level = _level;
         this->parent = nullptr;
         init();
     }
 
-    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree* parent) {
-        this->topLeft = _topLeft;
-        this->botRight = _bottomRight;
+    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree *parent)
+            : topLeft(_topLeft), botRight(_bottomRight) {
         this->level = _level;
         this->parent = parent;
 
         init();
     }
 
-    void setHashStorage(HashStorage* _hashStorage);
+    void setHashStorage(HashStorage *_hashStorage);
 
     Chunk *markChangedChunk(Chunk changedChunk);
 
@@ -73,7 +71,7 @@ private:
 public:
     std::pair<Point, Point> getBounds();
 
-    size_t hashQuadTree(bool force=false);
+    size_t hashQuadTree(bool force = false);
     // Hold details of the boundary of this node
 protected:
     Point topLeft;

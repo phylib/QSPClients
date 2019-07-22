@@ -6,7 +6,6 @@
 #define QUADTREESYNCEVALUATION_HASHSTORAGE_H
 
 
-#include <vector>
 #include "lru-cache.h"
 
 #include "../QuadTreeStructs.h"
@@ -16,7 +15,8 @@ public:
     HashStorage(size_t size);
 
 public:
-    void insert(size_t hash, const std::vector<Point>& changes);
+    void insert(size_t hash, const std::vector<Point> changes);
+
     std::pair<size_t, const std::vector<Point>> get(std::size_t hash);
 
 

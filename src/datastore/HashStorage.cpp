@@ -5,12 +5,10 @@
 #include "HashStorage.h"
 
 HashStorage::HashStorage(size_t size)
-        : size(size)
-        , datastore(size){
-
+        : size(size), datastore(size) {
 }
 
-void HashStorage::insert(size_t hash, const std::vector<Point>& changes) {
+void HashStorage::insert(size_t hash, const std::vector<Point> changes) {
     datastore.put(hash, changes);
 
 }
