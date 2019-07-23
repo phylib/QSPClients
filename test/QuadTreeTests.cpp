@@ -36,6 +36,44 @@ TEST_CASE("QuadTree initialization and find element", "[quadTree]") {
 
     }
 
+    SECTION("Test is Point in QuadTree") {
+        QuadTree tree1(Point(0, 0), Point(8, 8), 1);
+
+        REQUIRE(tree1.isPointInQuadTree(Point(0, 0)));
+        REQUIRE(tree1.isPointInQuadTree(Point(7, 7)));
+        REQUIRE(tree1.isPointInQuadTree(Point(7, 0)));
+        REQUIRE(tree1.isPointInQuadTree(Point(0, 7)));
+        REQUIRE(tree1.isPointInQuadTree(Point(3, 3)));
+
+        REQUIRE(!tree1.isPointInQuadTree(Point(-1, -1)));
+        REQUIRE(!tree1.isPointInQuadTree(Point(8, 8)));
+        REQUIRE(!tree1.isPointInQuadTree(Point(8, 7)));
+        REQUIRE(!tree1.isPointInQuadTree(Point(7, 8)));
+        REQUIRE(!tree1.isPointInQuadTree(Point(-7, 8)));
+    }
+
+    SECTION("Test is Point in QuadTree with negative coords") {
+        QuadTree tree2(Point(-8, -8), Point(8, 8), 1);
+
+        REQUIRE(tree2.isPointInQuadTree(Point(0,0)));
+        REQUIRE(tree2.isPointInQuadTree(Point(7,7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(7,0)));
+        REQUIRE(tree2.isPointInQuadTree(Point(0,7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(3,3)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-8, -8)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-8,-7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-8,7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(0,-8)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-1, -3)));
+
+        REQUIRE(!tree2.isPointInQuadTree(Point(-9, -9)));
+        REQUIRE(!tree2.isPointInQuadTree(Point(8, 8)));
+        REQUIRE(!tree2.isPointInQuadTree(Point(8, 7)));
+        REQUIRE(!tree2.isPointInQuadTree(Point(7, 8)));
+        REQUIRE(!tree2.isPointInQuadTree(Point(-7, 9)));
+
+    }
+
     SECTION("Test a Quadtree with one level") {
         QuadTree quadTree4x4(Point(0, 0), Point(4, 4), 1);
 

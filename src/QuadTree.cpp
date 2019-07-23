@@ -145,3 +145,8 @@ void QuadTree::updateHash(size_t newHash) {
     }
     this->changedChunks.clear();
 }
+
+bool QuadTree::isPointInQuadTree(Point p) {
+    return p.x >= topLeft.x && p.x < botRight.x
+           && p.y >= topLeft.y && p.y < botRight.y;
+}

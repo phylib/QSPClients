@@ -55,6 +55,8 @@ public:
         return this->hash;
     }
 
+    bool isPointInQuadTree(Point p);
+
 private:
     void init();
 
