@@ -55,6 +55,8 @@ public:
         return this->hash;
     }
 
+    std::vector<Chunk> enumerateChunks();
+
     bool isPointInQuadTree(Point p);
 
 private:

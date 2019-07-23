@@ -116,6 +116,20 @@ TEST_CASE("QuadTree initialization and find element", "[quadTree]") {
     }
 }
 
+TEST_CASE("Test chunk enumeration") {
+
+    QuadTree tree(Point(0, 0), Point(4, 4), 1);
+    const std::vector<Chunk> vector = tree.enumerateChunks();
+    auto it = vector.begin();
+    REQUIRE(comparePoints((*it).pos, Point(0, 0)));
+    it++; // Second element
+    it++; // Third element
+    REQUIRE(comparePoints((*it).pos, Point(2, 0)));
+    it++; // fourth element
+    it++; // first in second row
+    REQUIRE(comparePoints((*it).pos, Point(0, 1)));
+}
+
 TEST_CASE("Change parts of a QuadTree", "[quadTree]") {
 
     SECTION("Test if changing chunks works") {
@@ -253,6 +267,5 @@ TEST_CASE("Test the HashStorage", "[HashStorage]") {
         REQUIRE(storage.exists(rh2));
         REQUIRE(storage.exists(trch2));
     }
-
 
 }

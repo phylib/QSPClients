@@ -121,7 +121,7 @@ std::size_t QuadTree::hashQuadTree(bool force) {
     }
 }
 
-void QuadTree::setHashStorage(HashStorage& _hashStorage) {
+void QuadTree::setHashStorage(HashStorage &_hashStorage) {
     this->hashStorage = &_hashStorage;
     if (!isInMaxLevel()) {
         this->topLeftTree->setHashStorage(_hashStorage);
@@ -149,4 +149,25 @@ void QuadTree::updateHash(size_t newHash) {
 bool QuadTree::isPointInQuadTree(Point p) {
     return p.x >= topLeft.x && p.x < botRight.x
            && p.y >= topLeft.y && p.y < botRight.y;
+}
+
+std::vector<Chunk> QuadTree::enumerateChunks() {
+    std::vector<Chunk> chunkVector;
+
+    if (isInMaxLevel()) {
+        chunkVector.insert(chunkVector.begin(), this->chunks.begin(), this->chunks.end());
+    } else {
+        std::vector<Chunk> tmp;
+        tmp = this->topLeftTree->enumerateChunks();
+        chunkVector.insert(chunkVector.end(), tmp.begin(), tmp.end());
+        tmp = this->topRightTree->enumerateChunks();
+        chunkVector.insert(chunkVector.end(), tmp.begin(), tmp.end());
+        tmp = this->botLeftTree->enumerateChunks();
+        chunkVector.insert(chunkVector.end(), tmp.begin(), tmp.end());
+        tmp = this->botRightTree->enumerateChunks();
+        chunkVector.insert(chunkVector.end(), tmp.begin(), tmp.end());
+    }
+
+    std::sort(chunkVector.begin(), chunkVector.end(), Chunk::compareChunks);
+    return chunkVector;
 }

@@ -25,6 +25,13 @@ struct Point {
 
     }
 
+    static bool comparePoints(Point p1, Point p2) {
+        if (p1.y == p2.y) {
+            return p1.x < p2.x;
+        }
+        return p1.y < p2.y;
+    }
+
 };
 
 struct Chunk {
@@ -48,6 +55,20 @@ struct Chunk {
         boost::hash_combine(seed, data);
         return seed;
     }
+
+    static bool compareChunks(Chunk c1, Chunk c2) {
+        return Point::comparePoints(c1.pos, c2.pos);
+    }
+};
+
+struct Rectangle {
+    Point topleft;
+    Point bottomRight;
+
+    Rectangle(const Point &topleft, const Point &bottomRight) : topleft(topleft), bottomRight(bottomRight) {
+    }
+
+    Rectangle() = default;
 };
 
 
