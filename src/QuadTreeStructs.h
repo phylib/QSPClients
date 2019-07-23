@@ -59,6 +59,10 @@ struct Chunk {
     static bool compareChunks(Chunk c1, Chunk c2) {
         return Point::comparePoints(c1.pos, c2.pos);
     }
+
+    static bool chunkCoordMatch(Chunk c1, Chunk c2) {
+        return c1.pos.x == c2.pos.x && c1.pos.y == c2.pos.y;
+    }
 };
 
 struct Rectangle {
