@@ -14,9 +14,9 @@ add_executable(QuadTreeSyncEvaluation src/main.cpp
         src/datastore/HashStorage.cpp src/datastore/HashStorage.h
         src/QuadTreeStructs.h)
 
-add_executable(tests test/tests.cpp
+add_executable(QuadTreeTests test/QuadTreeTests.cpp
         src/QuadTree.cpp src/QuadTree.h
         src/datastore/lru-cache.h
         src/datastore/HashStorage.cpp src/datastore/HashStorage.h
         src/QuadTreeStructs.h)
-target_link_libraries(tests Catch2::Catch2)
+target_link_libraries(QuadTreeTests Catch2::Catch2)

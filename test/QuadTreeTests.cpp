@@ -181,6 +181,14 @@ TEST_CASE("Test the HashStorage", "[HashStorage]") {
         REQUIRE(!storage.exists(quadTree.botLeftTree->getHash()));
         REQUIRE(!storage.exists(quadTree.botRightTree->getHash()));
 
+
+        HashStorage storage16x16;
+        QuadTree quadTree16x16(Point(0, 0), Point(16, 16), 1);
+        quadTree16x16.setHashStorage(storage16x16);
+        quadTree16x16.markChangedChunk(Chunk(Point(3, 0), 3));
+        quadTree16x16.hashQuadTree();
+        REQUIRE(storage16x16.size() == 4);
+
     }
 
     SECTION("Old hash value should be invalidated when new hash is stored") {
