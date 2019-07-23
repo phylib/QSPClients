@@ -19,9 +19,12 @@ public:
 
     std::pair<size_t, const std::vector<Point>> get(std::size_t hash);
 
+    std::size_t size();
+
+    bool exists(size_t hash);
 
 private:
-    std::size_t size;
+    std::size_t _size;
     cache::lru_cache<std::size_t, std::vector<Point>> datastore;
 
 };

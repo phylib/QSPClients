@@ -100,11 +100,7 @@ std::size_t QuadTree::hashQuadTree(bool force) {
             for (Chunk &c : chunks) {
                 boost::hash_combine(seed, c.hashChunk());
             }
-            this->hash = seed;
-            if (this->hashStorage != nullptr) {
-                //this->hashStorage->insert(this->hash, this->changedChunks);
-            }
-            this->changedChunks.clear();
+            updateHash(seed);
 
             return seed;
         } else {
@@ -114,11 +110,8 @@ std::size_t QuadTree::hashQuadTree(bool force) {
             boost::hash_combine(seed, this->topRightTree->hashQuadTree(force));
             boost::hash_combine(seed, this->botLeftTree->hashQuadTree(force));
             boost::hash_combine(seed, this->botRightTree->hashQuadTree(force));
-            this->hash = seed;
-            if (this->hashStorage != nullptr) {
-                //this->hashStorage->insert(this->hash, this->changedChunks);
-            }
-            this->changedChunks.clear();
+
+            updateHash(seed);
 
             return seed;
         }
@@ -136,4 +129,16 @@ void QuadTree::setHashStorage(HashStorage *_hashStorage) {
         this->botLeftTree->setHashStorage(_hashStorage);
         this->botRightTree->setHashStorage(_hashStorage);
     }
+}
+
+void QuadTree::updateHash(size_t newHash) {
+
+    // Invalidate old data store entry
+    //todo
+    this->previousHash = hash;
+    this->hash = newHash;
+    if (this->hashStorage != nullptr) {
+        this->hashStorage->insert(this->previousHash, this->changedChunks);
+    }
+    this->changedChunks.clear();
 }

@@ -21,17 +21,13 @@ class QuadTree {
 
 public:
     QuadTree(Point _topLeft, Point _bottomRight, unsigned _level)
-            : topLeft(_topLeft), botRight(_bottomRight) {
+            : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
 
-        this->level = _level;
-        this->parent = nullptr;
         init();
     }
 
     QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree *parent)
-            : topLeft(_topLeft), botRight(_bottomRight) {
-        this->level = _level;
-        this->parent = parent;
+            : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
 
         init();
     }
@@ -66,6 +62,8 @@ private:
 
     void initChildren();
 
+    void updateHash(size_t newHash);
+
     Chunk *getChunk(Chunk _chunk, bool change);
 
 public:
@@ -79,6 +77,7 @@ protected:
     unsigned level;
 
     std::size_t hash;
+    std::size_t previousHash;
 
     std::vector<Chunk> chunks;
     std::vector<Point> changedChunks;

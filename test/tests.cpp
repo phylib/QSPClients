@@ -11,6 +11,10 @@ bool testBounds(std::pair<Point, Point> bounds, int x1, int y1, int x2, int y2) 
            && bounds.second.x == x2 && bounds.second.y == y2;
 }
 
+bool comparePoints(Point p1, Point p2) {
+    return p1.x == p2.x && p1.y == p2.y;
+}
+
 TEST_CASE("QuadTree initialization and find element", "[quadTree]") {
 
     SECTION("A simple 2x2 tree (no subtrees)") {
@@ -103,7 +107,7 @@ TEST_CASE("Change parts of a QuadTree", "[quadTree]") {
 TEST_CASE("Test QuadTree Hash Functions") {
 
     SECTION("The hash of a tree must change when a chunk changes") {
-        QuadTree quadTree(Point(0,0), Point(4,4), 1);
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         size_t initial_hash = quadTree.hashQuadTree();
         REQUIRE(initial_hash == quadTree.hashQuadTree(true)); // Hash stays the same when rehashing
@@ -114,7 +118,7 @@ TEST_CASE("Test QuadTree Hash Functions") {
     }
 
     SECTION("The hash of an unchanged subtree must not change when a chunk changes") {
-        QuadTree quadTree(Point(0,0), Point(4,4), 1);
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         size_t tl = quadTree.topLeftTree->hashQuadTree();
         size_t tr = quadTree.topRightTree->hashQuadTree();
@@ -128,8 +132,8 @@ TEST_CASE("Test QuadTree Hash Functions") {
 
     SECTION("The hash of two identical trees should be the same") {
 
-        QuadTree tree1(Point(0,0), Point(2,2), 1);
-        QuadTree tree2(Point(0,0), Point(2,2), 1);
+        QuadTree tree1(Point(0, 0), Point(2, 2), 1);
+        QuadTree tree2(Point(0, 0), Point(2, 2), 1);
         REQUIRE(tree1.hashQuadTree() == tree2.hashQuadTree());
 
         tree1.markChangedChunk(Chunk(Point(0, 2), 3));
@@ -139,7 +143,7 @@ TEST_CASE("Test QuadTree Hash Functions") {
     }
 
     SECTION("The changes of a QuadTree must be empty after rehashing") {
-        QuadTree quadTree(Point(0,0), Point(4,4), 1);
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         quadTree.markChangedChunk(Chunk(Point(3, 0), 3));
         quadTree.markChangedChunk(Chunk(Point(3, 3), 4));
@@ -150,4 +154,59 @@ TEST_CASE("Test QuadTree Hash Functions") {
 
         REQUIRE(quadTree.getChanges().size() == 0);
     }
+}
+
+TEST_CASE("Test the HashStorage", "[HashStorage]") {
+
+    SECTION("Insert data and check if the right points are stored") {
+        HashStorage storage(20);
+
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
+        quadTree.setHashStorage(&storage);
+
+        size_t rh = quadTree.getHash();
+        size_t trch = quadTree.topRightTree->getHash();
+
+        quadTree.markChangedChunk(Chunk(Point(3, 0), 3));
+        quadTree.hashQuadTree();
+
+        // Check if 3,0 is stored for root
+        Point changed = *(storage.get(rh).second.begin());
+        REQUIRE(comparePoints(changed, Point(3, 0)));
+
+        // Check if 3,0 is stored for child
+        changed = *(storage.get(trch).second.begin());
+        REQUIRE(comparePoints(changed, Point(3, 0)));
+        // No entry for childs without change should exist
+        REQUIRE(!storage.exists(quadTree.botLeftTree->getHash()));
+        REQUIRE(!storage.exists(quadTree.botRightTree->getHash()));
+
+    }
+
+    SECTION("Old hash value should be invalidated when new hash is stored") {
+        HashStorage storage(20);
+
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
+        quadTree.setHashStorage(&storage);
+
+        size_t rh1 = quadTree.getHash();
+        size_t trch1 = quadTree.topRightTree->getHash();
+
+        quadTree.markChangedChunk(Chunk(Point(3, 0), 2));
+        quadTree.hashQuadTree();
+
+        size_t rh2 = quadTree.getHash();
+        size_t trch2 = quadTree.topRightTree->getHash();
+
+        quadTree.markChangedChunk(Chunk(Point(3, 0), 2));
+        quadTree.hashQuadTree();
+
+        REQUIRE(!storage.exists(rh1));
+        REQUIRE(!storage.exists(trch1));
+
+        REQUIRE(storage.exists(rh2));
+        REQUIRE(storage.exists(trch2));
+    }
+
+
 }

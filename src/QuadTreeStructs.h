@@ -17,6 +17,14 @@ struct Point {
         y = _y;
     }
 
+    Point(const Point &_p2)
+            : x(_p2.x), y(_p2.y) {
+    }
+
+    Point() {
+
+    }
+
 };
 
 struct Chunk {
