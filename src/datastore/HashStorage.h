@@ -14,9 +14,9 @@ public:
     HashStorage();
 
 public:
-    void insert(size_t hash, const std::vector<Point> changes);
+    void insert(size_t hash, const std::vector<Chunk> changes);
 
-    std::pair<size_t, const std::vector<Point>> get(std::size_t hash);
+    std::pair<size_t, const std::vector<Chunk>> get(std::size_t hash);
 
     std::size_t size();
 
@@ -25,7 +25,7 @@ public:
     void remove(size_t hash);
 
 private:
-    std::unordered_map<size_t, const std::vector<Point>> datastore;
+    std::unordered_map<size_t, const std::vector<Chunk>> datastore;
 };
 
 #endif //QUADTREESYNCEVALUATION_HASHSTORAGE_H

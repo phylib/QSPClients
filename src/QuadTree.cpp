@@ -43,7 +43,7 @@ Chunk *QuadTree::getChunk(Chunk _chunk, bool change) {
     Point point = _chunk.pos;
 
     if (change) {
-        this->changedChunks.insert(this->changedChunks.begin(), _chunk.pos);
+        this->changedChunks.insert(this->changedChunks.begin(), _chunk);
     }
 
     if (isInMaxLevel()) {

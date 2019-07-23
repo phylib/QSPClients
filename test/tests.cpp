@@ -171,12 +171,12 @@ TEST_CASE("Test the HashStorage", "[HashStorage]") {
         quadTree.hashQuadTree();
 
         // Check if 3,0 is stored for root
-        Point changed = *(storage.get(rh).second.begin());
-        REQUIRE(comparePoints(changed, Point(3, 0)));
+        Chunk changed = *(storage.get(rh).second.begin());
+        REQUIRE(comparePoints(changed.pos, Point(3, 0)));
 
         // Check if 3,0 is stored for child
         changed = *(storage.get(trch).second.begin());
-        REQUIRE(comparePoints(changed, Point(3, 0)));
+        REQUIRE(comparePoints(changed.pos, Point(3, 0)));
         // No entry for childs without change should exist
         REQUIRE(!storage.exists(quadTree.botLeftTree->getHash()));
         REQUIRE(!storage.exists(quadTree.botRightTree->getHash()));

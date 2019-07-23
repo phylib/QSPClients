@@ -7,13 +7,13 @@
 
 HashStorage::HashStorage() = default;
 
-void HashStorage::insert(size_t hash, const std::vector<Point> changes) {
+void HashStorage::insert(size_t hash, const std::vector<Chunk> changes) {
     datastore.insert(std::make_pair(hash, changes));
 }
 
-std::pair<size_t, const std::vector<Point>> HashStorage::get(std::size_t hash) {
-    const std::vector<Point> changes = datastore[hash];
-    return std::pair<size_t, const std::vector<Point>>(hash, changes);
+std::pair<size_t, const std::vector<Chunk>> HashStorage::get(std::size_t hash) {
+    const std::vector<Chunk> changes = datastore[hash];
+    return std::pair<size_t, const std::vector<Chunk>>(hash, changes);
 }
 
 std::size_t HashStorage::size() {

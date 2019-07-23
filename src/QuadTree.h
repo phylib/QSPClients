@@ -47,7 +47,7 @@ public:
         return !this->changedChunks.empty();
     }
 
-    std::vector<Point> getChanges() {
+    std::vector<Chunk> getChanges() {
         return changedChunks;
     }
 
@@ -80,7 +80,7 @@ protected:
     std::size_t previousHash;
 
     std::vector<Chunk> chunks;
-    std::vector<Point> changedChunks;
+    std::vector<Chunk> changedChunks;
 
     // Parent of this tree
     QuadTree *parent;
