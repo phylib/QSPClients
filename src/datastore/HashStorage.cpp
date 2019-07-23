@@ -5,9 +5,7 @@
 #include <iostream>
 #include "HashStorage.h"
 
-HashStorage::HashStorage(size_t size)
-        : _size(size), datastore(size) {
-}
+HashStorage::HashStorage() = default;
 
 void HashStorage::insert(size_t hash, const std::vector<Point> changes) {
     datastore.insert(std::make_pair(hash, changes));

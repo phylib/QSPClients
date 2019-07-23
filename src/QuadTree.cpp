@@ -121,8 +121,8 @@ std::size_t QuadTree::hashQuadTree(bool force) {
     }
 }
 
-void QuadTree::setHashStorage(HashStorage *_hashStorage) {
-    this->hashStorage = _hashStorage;
+void QuadTree::setHashStorage(HashStorage& _hashStorage) {
+    this->hashStorage = &_hashStorage;
     if (!isInMaxLevel()) {
         this->topLeftTree->setHashStorage(_hashStorage);
         this->topRightTree->setHashStorage(_hashStorage);

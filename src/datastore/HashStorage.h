@@ -11,7 +11,7 @@
 
 class HashStorage {
 public:
-    HashStorage(size_t size);
+    HashStorage();
 
 public:
     void insert(size_t hash, const std::vector<Point> changes);
@@ -25,7 +25,6 @@ public:
     void remove(size_t hash);
 
 private:
-    std::size_t _size;
     std::unordered_map<size_t, const std::vector<Point>> datastore;
 };
 

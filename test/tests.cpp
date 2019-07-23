@@ -159,10 +159,10 @@ TEST_CASE("Test QuadTree Hash Functions") {
 TEST_CASE("Test the HashStorage", "[HashStorage]") {
 
     SECTION("Insert data and check if the right points are stored") {
-        HashStorage storage(20);
+        HashStorage storage;
 
         QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
-        quadTree.setHashStorage(&storage);
+        quadTree.setHashStorage(storage);
 
         size_t rh = quadTree.getHash();
         size_t trch = quadTree.topRightTree->getHash();
@@ -184,10 +184,10 @@ TEST_CASE("Test the HashStorage", "[HashStorage]") {
     }
 
     SECTION("Old hash value should be invalidated when new hash is stored") {
-        HashStorage storage(20);
+        HashStorage storage;
 
         QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
-        quadTree.setHashStorage(&storage);
+        quadTree.setHashStorage(storage);
 
         size_t rh1 = quadTree.getHash();
         size_t trch1 = quadTree.topRightTree->getHash();

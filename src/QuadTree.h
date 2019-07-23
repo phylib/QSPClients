@@ -32,7 +32,7 @@ public:
         init();
     }
 
-    void setHashStorage(HashStorage *_hashStorage);
+    void setHashStorage(HashStorage& _hashStorage);
 
     Chunk *markChangedChunk(Chunk changedChunk);
 
