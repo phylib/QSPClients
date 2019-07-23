@@ -14,7 +14,7 @@ public:
     HashStorage();
 
 public:
-    void insert(size_t hash, const std::vector<Chunk> changes);
+    void insert(size_t hash, const std::vector<Chunk> &changes);
 
     std::pair<size_t, const std::vector<Chunk>> get(std::size_t hash);
 

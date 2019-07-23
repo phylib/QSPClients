@@ -7,7 +7,7 @@
 
 HashStorage::HashStorage() = default;
 
-void HashStorage::insert(size_t hash, const std::vector<Chunk> changes) {
+void HashStorage::insert(size_t hash, const std::vector<Chunk> &changes) {
     datastore.insert(std::make_pair(hash, changes));
 }
 
