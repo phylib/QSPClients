@@ -134,7 +134,10 @@ void QuadTree::setHashStorage(HashStorage *_hashStorage) {
 void QuadTree::updateHash(size_t newHash) {
 
     // Invalidate old data store entry
-    //todo
+    if (this->hashStorage != nullptr) {
+        this->hashStorage->remove(this->previousHash);
+    }
+
     this->previousHash = hash;
     this->hash = newHash;
     if (this->hashStorage != nullptr) {

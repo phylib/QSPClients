@@ -10,11 +10,11 @@ HashStorage::HashStorage(size_t size)
 }
 
 void HashStorage::insert(size_t hash, const std::vector<Point> changes) {
-    datastore.put(hash, changes);
+    datastore.insert(std::make_pair(hash, changes));
 }
 
 std::pair<size_t, const std::vector<Point>> HashStorage::get(std::size_t hash) {
-    const std::vector<Point> changes = datastore.get(hash);
+    const std::vector<Point> changes = datastore[hash];
     return std::pair<size_t, const std::vector<Point>>(hash, changes);
 }
 
@@ -23,6 +23,13 @@ std::size_t HashStorage::size() {
 }
 
 bool HashStorage::exists(size_t hash) {
-    return datastore.exists(hash);
+    return datastore.find(hash) != datastore.end();
+}
+
+void HashStorage::remove(size_t hash) {
+    auto it = datastore.find(hash);
+    if (it != datastore.end()) {
+        datastore.erase(it);
+    }
 }
 

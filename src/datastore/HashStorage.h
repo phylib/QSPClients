@@ -5,8 +5,7 @@
 #ifndef QUADTREESYNCEVALUATION_HASHSTORAGE_H
 #define QUADTREESYNCEVALUATION_HASHSTORAGE_H
 
-
-#include "lru-cache.h"
+#include <unordered_map>
 
 #include "../QuadTreeStructs.h"
 
@@ -23,10 +22,11 @@ public:
 
     bool exists(size_t hash);
 
+    void remove(size_t hash);
+
 private:
     std::size_t _size;
-    cache::lru_cache<std::size_t, std::vector<Point>> datastore;
-
+    std::unordered_map<size_t, const std::vector<Point>> datastore;
 };
 
 #endif //QUADTREESYNCEVALUATION_HASHSTORAGE_H
