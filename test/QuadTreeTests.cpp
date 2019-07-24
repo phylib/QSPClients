@@ -207,6 +207,17 @@ TEST_CASE("Test QuadTree Hash Functions") {
 
         REQUIRE(quadTree.getChanges().size() == 0);
     }
+
+    SECTION("A single chunk changing twice should be counted only once") {
+
+        QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
+
+        quadTree.markChangedChunk(Chunk(Point(3, 3), 1));
+        quadTree.markChangedChunk(Chunk(Point(3, 3), 2));
+
+        REQUIRE(quadTree.getChanges().size() == 1);
+        REQUIRE((*quadTree.getChanges().begin()).data == 2);
+    }
 }
 
 TEST_CASE("Test the HashStorage", "[HashStorage]") {

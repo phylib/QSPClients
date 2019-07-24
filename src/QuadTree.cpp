@@ -43,6 +43,12 @@ Chunk *QuadTree::getChunk(Chunk _chunk, bool change) {
     Point point = _chunk.pos;
 
     if (change) {
+
+        auto searchResult = std::find_if(this->changedChunks.begin(), this->changedChunks.end(),
+                                         std::bind(Chunk::chunkCoordMatch, std::placeholders::_1, _chunk));
+        if (searchResult != this->changedChunks.end()) {
+            this->changedChunks.erase(searchResult);
+        }
         this->changedChunks.insert(this->changedChunks.begin(), _chunk);
     }
 
