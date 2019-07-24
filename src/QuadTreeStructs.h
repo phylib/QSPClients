@@ -65,6 +65,21 @@ struct Chunk {
     }
 };
 
+struct ChangeResponse {
+    std::string path;
+    std::size_t currentHash;
+    bool delta;
+    std::vector<Chunk> changeVector;
+
+    ChangeResponse() {}
+
+    ChangeResponse(const std::string &path, size_t currentHash) : path(path), currentHash(currentHash) {}
+
+    bool isEmpty() {
+        return currentHash == 0 && changeVector.empty();
+    }
+};
+
 struct Rectangle {
     Point topleft;
     Point bottomRight;

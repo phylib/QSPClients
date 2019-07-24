@@ -4,6 +4,7 @@
 #define CATCH_CONFIG_MAIN
 
 #include "catch.hpp"
+#include <string>
 #include "../src/QuadTree.h"
 
 bool testBounds(std::pair<Point, Point> bounds, int x1, int y1, int x2, int y2) {
@@ -55,15 +56,15 @@ TEST_CASE("QuadTree initialization and find element", "[quadTree]") {
     SECTION("Test is Point in QuadTree with negative coords") {
         QuadTree tree2(Point(-8, -8), Point(8, 8), 1);
 
-        REQUIRE(tree2.isPointInQuadTree(Point(0,0)));
-        REQUIRE(tree2.isPointInQuadTree(Point(7,7)));
-        REQUIRE(tree2.isPointInQuadTree(Point(7,0)));
-        REQUIRE(tree2.isPointInQuadTree(Point(0,7)));
-        REQUIRE(tree2.isPointInQuadTree(Point(3,3)));
+        REQUIRE(tree2.isPointInQuadTree(Point(0, 0)));
+        REQUIRE(tree2.isPointInQuadTree(Point(7, 7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(7, 0)));
+        REQUIRE(tree2.isPointInQuadTree(Point(0, 7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(3, 3)));
         REQUIRE(tree2.isPointInQuadTree(Point(-8, -8)));
-        REQUIRE(tree2.isPointInQuadTree(Point(-8,-7)));
-        REQUIRE(tree2.isPointInQuadTree(Point(-8,7)));
-        REQUIRE(tree2.isPointInQuadTree(Point(0,-8)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-8, -7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(-8, 7)));
+        REQUIRE(tree2.isPointInQuadTree(Point(0, -8)));
         REQUIRE(tree2.isPointInQuadTree(Point(-1, -3)));
 
         REQUIRE(!tree2.isPointInQuadTree(Point(-9, -9)));
@@ -266,6 +267,99 @@ TEST_CASE("Test the HashStorage", "[HashStorage]") {
 
         REQUIRE(storage.exists(rh2));
         REQUIRE(storage.exists(trch2));
+    }
+
+}
+
+TEST_CASE("Encode and decode name components") {
+
+    SECTION("Decode name components") {
+        const std::vector<Point> components = QuadTree::splitPath("/0,0/0,0/0,0/", 32); // e.g. point 0,0
+
+        auto it = components.begin();
+        REQUIRE((*it).x == 0);
+        REQUIRE((*it).y == 0);
+        it++;
+        REQUIRE((*it).x == 0);
+        REQUIRE((*it).y == 0);
+        it++;
+        REQUIRE((*it).x == 0);
+        REQUIRE((*it).y == 0);
+
+        const std::vector<Point> components2 = QuadTree::splitPath("/0,1/1,3/3,7/6,14/", 32); // e.g. Point 13,29
+
+        it = components2.begin();
+        REQUIRE((*it).x == 0);
+        REQUIRE((*it).y == 16);
+        it++;
+        REQUIRE((*it).x == 8);
+        REQUIRE((*it).y == 24);
+        it++;
+        REQUIRE((*it).x == 12);
+        REQUIRE((*it).y == 28);
+        it++;
+        REQUIRE((*it).x == 12);
+        REQUIRE((*it).y == 28);
+
+        const std::vector<Point> components3 = QuadTree::splitPath("/-1,-2/-2,-3/-4,-6/-7,-11/",
+                                                                   32); // e.g. point -13,-21
+
+        it = components3.begin();
+        REQUIRE((*it).x == -16);
+        REQUIRE((*it).y == -32);
+        it++;
+        REQUIRE((*it).x == -16);
+        REQUIRE((*it).y == -24);
+        it++;
+        REQUIRE((*it).x == -16);
+        REQUIRE((*it).y == -24);
+        it++;
+        REQUIRE((*it).x == -14);
+        REQUIRE((*it).y == -22);
+
+    }
+
+    SECTION("Encode name components") {
+
+        std::string test = "/0,0/0,0/0,0/0,0/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(0, 0), 32)) == 0);
+
+        test = "/0,1/1,3/3,7/6,14/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(13, 29), 32)) == 0);
+
+        test = "/-1,-2/-2,-3/-4,-6/-7,-11/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(-13, -21), 32)) == 0);
+
+    }
+
+    SECTION("Tree based information retrieval") {
+
+        QuadTree tree(Point(0, 0), Point(32, 32), 1);
+        HashStorage storage;
+        tree.setHashStorage(storage);
+
+        std::string path = "/0,0";
+        QuadTree *subTree = tree.getSubTree(path, 32);
+        REQUIRE(subTree->getLevel() == 2);
+        REQUIRE(comparePoints(subTree->getBounds().first, Point(0, 0)));
+
+        path = "/";
+        subTree = tree.getSubTree(path, 32);
+        REQUIRE(subTree->getLevel() == 1);
+        REQUIRE(comparePoints(subTree->getBounds().first, Point(0, 0)));
+
+        path = "/1,1";
+        subTree = tree.getSubTree(path, 32);
+        REQUIRE(subTree->getLevel() == 2);
+        REQUIRE(comparePoints(subTree->getBounds().first, Point(16, 16)));
+
+        size_t initialSubTreeHash = subTree->getHash();
+        tree.markChangedChunk(Chunk(Point(31,31), 1));
+        tree.hashQuadTree();
+        REQUIRE(subTree->getHash() != initialSubTreeHash);
+        REQUIRE(storage.get(initialSubTreeHash).second.size() == 1);
+        REQUIRE(comparePoints(Point(31, 31), (*storage.get(initialSubTreeHash).second.begin()).pos));
+
     }
 
 }

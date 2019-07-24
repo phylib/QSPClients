@@ -33,9 +33,10 @@ void SyncParticipant::initSyncTrees() {
                 // For points not beeing covered, a new quadtree is build
                 if (!pointInTrees) {
                     // Init QuadTree
-                    int quadTreeX = floor(point.x / (double) QUADTREES_SIZE) * QUADTREES_SIZE;
-                    int quadTreeY = floor(point.y / (double) QUADTREES_SIZE) * QUADTREES_SIZE;
+                    int quadTreeX = floor(point.x / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
+                    int quadTreeY = floor(point.y / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
                     QuadTree quadTree(Point(quadTreeX, quadTreeY), Point(quadTreeX + 32, quadTreeY + 32), 1);
+                    quadTree.setHashStorage(this->hashStorage);
                     this->syncTrees.insert(this->syncTrees.begin(), quadTree);
                 }
 
@@ -71,4 +72,43 @@ Chunk SyncParticipant::getChunk(const Point &point) {
             return *syncTree.getChunk(point);
         }
     }
+}
+
+ChangeResponse SyncParticipant::getChanges(const std::string& path, const size_t& knownHash) {
+
+    std::vector<Point> points = QuadTree::splitPath(path, QUADTREE_SIZE * 2);
+    Point p = *points.begin();
+
+    // Shorten pointvector for use in quadtrees
+    points.erase(points.begin());
+    std::string quadTreePath = QuadTree::getPath(points.back(), QUADTREE_SIZE, points.size());
+
+    for (QuadTree &syncTree : syncTrees) {
+        if (syncTree.isPointInQuadTree(p)) {
+
+            QuadTree* requestedChangeTree = syncTree.getSubTree(quadTreePath, QUADTREE_SIZE);
+
+            if (requestedChangeTree->getHash() == knownHash) { // No change since knownHash
+                // Return an empty ChangeResponse
+                return ChangeResponse(path, 0);
+
+            } else {
+                // knownHash is not the current hash any more.
+                ChangeResponse cr(path, requestedChangeTree->getHash());
+
+                if (hashStorage.exists(knownHash)) { // Changes since known hash are still stored
+                    cr.changeVector = hashStorage.get(knownHash).second;
+                    cr.delta = true;
+                } else { // Change vector is lost, Encode full subtree
+                    cr.changeVector = requestedChangeTree->enumerateChunks();
+                    cr.delta = false;
+                }
+
+                return cr;
+            }
+        }
+    }
+    //const std::vector<const std::string> pathComponents = QuadTree::splitPath(path);
+
+    return ChangeResponse();
 }

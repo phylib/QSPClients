@@ -10,6 +10,7 @@
 #include <math.h>
 
 #include <boost/functional/hash.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "QuadTreeStructs.h"
 #include "datastore/HashStorage.h"
@@ -32,7 +33,7 @@ public:
         init();
     }
 
-    void setHashStorage(HashStorage& _hashStorage);
+    void setHashStorage(HashStorage &_hashStorage);
 
     Chunk *markChangedChunk(Chunk changedChunk);
 
@@ -55,11 +56,22 @@ public:
         return this->hash;
     }
 
+    unsigned getLevel() {
+        return this->level;
+    }
+
     std::vector<Chunk> enumerateChunks();
 
     bool isPointInQuadTree(Point p);
 
-private:
+    QuadTree *getSubTree(const std::string &path, int quadtreeSize);
+
+public:
+    static const std::vector<Point> splitPath(const std::string &path, int quadtreeSize);
+
+    static std::string getPath(const Point &point, int quadtreeSize, unsigned levels = MAX_LEVEL);
+
+protected:
     void init();
 
     void initChunks();
@@ -69,6 +81,9 @@ private:
     void updateHash(size_t newHash);
 
     Chunk *getChunk(Chunk _chunk, bool change);
+
+    static Point
+    getLeftUpperCornerFromPathComponent(const std::string &pathComponent, unsigned level, int quadtreeSize);
 
 public:
     std::pair<Point, Point> getBounds();

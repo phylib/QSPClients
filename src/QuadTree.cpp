@@ -171,3 +171,74 @@ std::vector<Chunk> QuadTree::enumerateChunks() {
     std::sort(chunkVector.begin(), chunkVector.end(), Chunk::compareChunks);
     return chunkVector;
 }
+
+const std::vector<Point> QuadTree::splitPath(const std::string &path, int quadtreeSize) {
+    std::vector<std::string> stringPathComponents;
+    boost::split(stringPathComponents, path, boost::is_any_of("/"));
+    stringPathComponents.erase(
+            std::remove_if(
+                    stringPathComponents.begin(),
+                    stringPathComponents.end(),
+                    [](std::string const &s) { return s.empty(); }),
+            stringPathComponents.end());
+
+    std::vector<Point> pathComponents;
+    int i = 1;
+    for (const std::string comp : stringPathComponents) {
+        Point point = QuadTree::getLeftUpperCornerFromPathComponent(comp, i++, quadtreeSize);
+        pathComponents.insert(pathComponents.begin(),
+                              point);
+    }
+    std::reverse(pathComponents.begin(), pathComponents.end());
+    return pathComponents;
+}
+
+Point
+QuadTree::getLeftUpperCornerFromPathComponent(const std::string &pathComponent, unsigned level, int quadtreeSize) {
+    std::vector<std::string> points;
+    boost::split(points, pathComponent, boost::is_any_of(","));
+    auto it = points.begin();
+    int x = std::stoi(*it);
+    it++;
+    int y = std::stoi(*it);
+
+    int factors = quadtreeSize / pow(2, level);
+
+    return Point(x * factors, y * factors);
+}
+
+std::string QuadTree::getPath(const Point &point, int quadtreeSize, unsigned levels) {
+
+    std::string path = "/";
+    for (int i = 1; i <= levels; i++) {
+        path = "/" + std::to_string(int(floor(point.x / (double) pow(2, i)))) + ","
+               + std::to_string(int(floor(point.y / (double) pow(2, i))))
+               + path;
+    }
+
+    return path;
+}
+
+QuadTree *QuadTree::getSubTree(const std::string &path, int quadtreeSize) {
+    const std::vector<Point> &vector = splitPath(path, quadtreeSize);
+    if (this->level - 1 == vector.size() || isInMaxLevel()) {
+        return this;
+    }
+
+    Point leftUpperCorner = vector.back();
+
+    // Traverse until final level
+    int verticalHalf = topLeft.x + ((botRight.x - topLeft.x) / 2);
+    int horizontalHalf = topLeft.y + ((botRight.y - topLeft.y) / 2);
+
+    if (leftUpperCorner.x < verticalHalf && leftUpperCorner.y < horizontalHalf) {
+        return topLeftTree->getSubTree(path, quadtreeSize);
+    } else if (leftUpperCorner.x >= verticalHalf && leftUpperCorner.y < horizontalHalf) {
+        return topRightTree->getSubTree(path, quadtreeSize);
+    } else if (leftUpperCorner.x < verticalHalf && leftUpperCorner.y >= horizontalHalf) {
+        return botLeftTree->getSubTree(path, quadtreeSize);
+    } else if (leftUpperCorner.x >= verticalHalf && leftUpperCorner.y >= horizontalHalf) {
+        return botRightTree->getSubTree(path, quadtreeSize);
+    }
+}
+
