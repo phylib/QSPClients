@@ -74,7 +74,7 @@ TEST_CASE("Apply changes to the sync area of the sync participant and check if h
 
     }
 
-    SECTION("Check if hash trees are build correctly") {
+    SECTION("Check if hash trees and ChangeResponses are build correctly") {
 
         std::vector<Rectangle> syncAreas;
         syncAreas.insert(syncAreas.begin(), Rectangle(Point(0, 0), Point(64, 64)));
@@ -122,10 +122,18 @@ TEST_CASE("Apply changes to the sync area of the sync participant and check if h
         ChangeResponse root1v2 = participant.getChanges("/1,0/", root1.currentHash);
         REQUIRE(root1v2.isEmpty());
 
+        // Apply a second change
+        participant.applyChange(p);
+        participant.reHash();
 
-
-
-        // Todo: Request new hashtrees here and look if changes are correct
+        // The inital root hash should not be available any more
+        ChangeResponse root0v3 = participant.getChanges("/0,0/", root0.currentHash);
+        REQUIRE(!root0v3.delta);
+        // When requesting the change since the last change, only a delta should be returned
+        root0v3 = participant.getChanges("/0,0/", root0v2.currentHash);
+        REQUIRE(root0v3.delta);
+        REQUIRE(root0v3.changeVector.size() == 1);
+        REQUIRE((root0v3.changeVector.begin())->data == 2);
 
     }
 
