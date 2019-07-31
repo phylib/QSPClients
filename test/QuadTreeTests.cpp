@@ -7,6 +7,8 @@
 #include <string>
 #include "../src/QuadTree.h"
 
+using namespace quadtree;
+
 bool testBounds(std::pair<Point, Point> bounds, int x1, int y1, int x2, int y2) {
     return bounds.first.x == x1 && bounds.first.y == y1
            && bounds.second.x == x2 && bounds.second.y == y2;

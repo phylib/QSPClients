@@ -4,7 +4,7 @@
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
-    QuadTree quadTree(Point(0,0), Point(16, 16), 1);
+    quadtree::QuadTree quadTree(quadtree::Point(0,0), quadtree::Point(16, 16), 1);
 
     return 0;
 }

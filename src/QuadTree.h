@@ -18,103 +18,106 @@
 const unsigned MAX_LEVEL = 4;
 
 
-class QuadTree {
+namespace quadtree {
 
-public:
-    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level)
-            : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
+    class QuadTree {
 
-        init();
-    }
+    public:
+        QuadTree(Point _topLeft, Point _bottomRight, unsigned _level)
+                : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
 
-    QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree *parent)
-            : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
+            init();
+        }
 
-        init();
-    }
+        QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree *parent)
+                : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
 
-    void setHashStorage(HashStorage &_hashStorage);
+            init();
+        }
 
-    Chunk *markChangedChunk(Chunk changedChunk);
+        void setHashStorage(HashStorage &_hashStorage);
 
-    Chunk *getChunk(Point point);
+        Chunk *markChangedChunk(Chunk changedChunk);
 
-    inline bool isInMaxLevel() {
-        unsigned width = botRight.x - topLeft.x;
-        return level == MAX_LEVEL || width <= 2;
-    }
+        Chunk *getChunk(Point point);
 
-    inline bool isChanged() {
-        return !this->changedChunks.empty();
-    }
+        inline bool isInMaxLevel() {
+            unsigned width = botRight.x - topLeft.x;
+            return level == MAX_LEVEL || width <= 2;
+        }
 
-    std::vector<Chunk> getChanges() {
-        return changedChunks;
-    }
+        inline bool isChanged() {
+            return !this->changedChunks.empty();
+        }
 
-    std::size_t getHash() {
-        return this->hash;
-    }
+        std::vector<Chunk> getChanges() {
+            return changedChunks;
+        }
 
-    unsigned getLevel() {
-        return this->level;
-    }
+        std::size_t getHash() {
+            return this->hash;
+        }
 
-    std::vector<Chunk> enumerateChunks();
+        unsigned getLevel() {
+            return this->level;
+        }
 
-    bool isPointInQuadTree(Point p);
+        std::vector<Chunk> enumerateChunks();
 
-    QuadTree *getSubTree(const std::string &path, int quadtreeSize);
+        bool isPointInQuadTree(Point p);
 
-public:
-    static const std::vector<Point> splitPath(const std::string &path, int quadtreeSize);
+        QuadTree *getSubTree(const std::string &path, int quadtreeSize);
 
-    static std::string getPath(const Point &point, int quadtreeSize, unsigned levels = MAX_LEVEL);
+    public:
+        static const std::vector<Point> splitPath(const std::string &path, int quadtreeSize);
 
-protected:
-    void init();
+        static std::string getPath(const Point &point, int quadtreeSize, unsigned levels = MAX_LEVEL);
 
-    void initChunks();
+    protected:
+        void init();
 
-    void initChildren();
+        void initChunks();
 
-    void updateHash(size_t newHash);
+        void initChildren();
 
-    Chunk *getChunk(Chunk _chunk, bool change);
+        void updateHash(size_t newHash);
 
-    static Point
-    getLeftUpperCornerFromPathComponent(const std::string &pathComponent, unsigned level, int quadtreeSize);
+        Chunk *getChunk(Chunk _chunk, bool change);
 
-public:
-    std::pair<Point, Point> getBounds();
+        static Point
+        getLeftUpperCornerFromPathComponent(const std::string &pathComponent, unsigned level, int quadtreeSize);
 
-    size_t hashQuadTree(bool force = false);
-    // Hold details of the boundary of this node
-protected:
-    Point topLeft;
-    Point botRight;
-    unsigned level;
+    public:
+        std::pair<Point, Point> getBounds();
 
-    std::size_t hash;
-    std::size_t previousHash;
+        size_t hashQuadTree(bool force = false);
+        // Hold details of the boundary of this node
+    protected:
+        Point topLeft;
+        Point botRight;
+        unsigned level;
 
-    std::vector<Chunk> chunks;
-    std::vector<Chunk> changedChunks;
+        std::size_t hash;
+        std::size_t previousHash;
 
-    // Parent of this tree
-    QuadTree *parent;
+        std::vector<Chunk> chunks;
+        std::vector<Chunk> changedChunks;
 
-    HashStorage *hashStorage = nullptr;
+        // Parent of this tree
+        QuadTree *parent;
+
+        HashStorage *hashStorage = nullptr;
 
 
-public:
-    // Children of this tree
-    QuadTree *topLeftTree;
-    QuadTree *topRightTree;
-    QuadTree *botLeftTree;
-    QuadTree *botRightTree;
+    public:
+        // Children of this tree
+        QuadTree *topLeftTree;
+        QuadTree *topRightTree;
+        QuadTree *botLeftTree;
+        QuadTree *botRightTree;
 
-};
+    };
 
+}
 
 #endif //QUADTREESYNCEVALUATION_QUADTREE_H

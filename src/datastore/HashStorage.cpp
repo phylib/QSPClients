@@ -7,13 +7,13 @@
 
 HashStorage::HashStorage() = default;
 
-void HashStorage::insert(size_t hash, const std::vector<Chunk> &changes) {
+void HashStorage::insert(size_t hash, const std::vector<quadtree::Chunk> &changes) {
     datastore.insert(std::make_pair(hash, changes));
 }
 
-std::pair<size_t, const std::vector<Chunk>> HashStorage::get(std::size_t hash) {
-    const std::vector<Chunk> changes = datastore[hash];
-    return std::pair<size_t, const std::vector<Chunk>>(hash, changes);
+std::pair<size_t, const std::vector<quadtree::Chunk>> HashStorage::get(std::size_t hash) {
+    const std::vector<quadtree::Chunk> changes = datastore[hash];
+    return std::pair<size_t, const std::vector<quadtree::Chunk>>(hash, changes);
 }
 
 std::size_t HashStorage::size() {

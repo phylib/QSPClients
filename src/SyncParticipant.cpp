@@ -4,111 +4,115 @@
 
 #include "SyncParticipant.h"
 
-SyncParticipant::SyncParticipant() = default;
+namespace quadtree {
 
-void SyncParticipant::setSyncAreas(std::vector<Rectangle> areas) {
+    SyncParticipant::SyncParticipant() = default;
 
-    this->syncAreas = areas;
+    void SyncParticipant::setSyncAreas(std::vector<Rectangle> areas) {
 
-    initSyncTrees();
-}
+        this->syncAreas = areas;
 
-void SyncParticipant::initSyncTrees() {
+        initSyncTrees();
+    }
 
-    // Check if every chunk of all sync areas is covered by quadtrees
-    for (const auto &area : syncAreas) {
-        for (int i = area.topleft.x; i < area.bottomRight.x; i++) {
-            for (int j = area.topleft.y; j < area.bottomRight.y; j++) {
+    void SyncParticipant::initSyncTrees() {
 
-                const Point &point = Point(i, j);
-                bool pointInTrees = false;
-                for (QuadTree syncTree : syncTrees) {
-                    if (syncTree.isPointInQuadTree(point)) {
-                        pointInTrees = true;
-                        break;
+        // Check if every chunk of all sync areas is covered by quadtrees
+        for (const auto &area : syncAreas) {
+            for (int i = area.topleft.x; i < area.bottomRight.x; i++) {
+                for (int j = area.topleft.y; j < area.bottomRight.y; j++) {
+
+                    const Point &point = Point(i, j);
+                    bool pointInTrees = false;
+                    for (QuadTree syncTree : syncTrees) {
+                        if (syncTree.isPointInQuadTree(point)) {
+                            pointInTrees = true;
+                            break;
+                        }
+
+                    }
+
+                    // For points not beeing covered, a new quadtree is build
+                    if (!pointInTrees) {
+                        // Init QuadTree
+                        int quadTreeX = floor(point.x / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
+                        int quadTreeY = floor(point.y / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
+                        QuadTree quadTree(Point(quadTreeX, quadTreeY), Point(quadTreeX + 32, quadTreeY + 32), 1);
+                        quadTree.setHashStorage(this->hashStorage);
+                        this->syncTrees.insert(this->syncTrees.begin(), quadTree);
                     }
 
                 }
-
-                // For points not beeing covered, a new quadtree is build
-                if (!pointInTrees) {
-                    // Init QuadTree
-                    int quadTreeX = floor(point.x / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
-                    int quadTreeY = floor(point.y / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
-                    QuadTree quadTree(Point(quadTreeX, quadTreeY), Point(quadTreeX + 32, quadTreeY + 32), 1);
-                    quadTree.setHashStorage(this->hashStorage);
-                    this->syncTrees.insert(this->syncTrees.begin(), quadTree);
-                }
-
             }
         }
     }
-}
 
-void SyncParticipant::reHash() {
-    for (auto &syncTree : syncTrees) {
-        syncTree.hashQuadTree();
-    }
-}
-
-void SyncParticipant::applyChange(const Point& changedPoint) {
-
-    for (auto &syncTree : syncTrees) {
-        if (syncTree.isPointInQuadTree(changedPoint)) {
-
-            Chunk* c = syncTree.getChunk(changedPoint);
-            c->data++;
-            syncTree.markChangedChunk(*c);
-
-            return;
+    void SyncParticipant::reHash() {
+        for (auto &syncTree : syncTrees) {
+            syncTree.hashQuadTree();
         }
     }
 
-}
+    void SyncParticipant::applyChange(const Point &changedPoint) {
 
-Chunk SyncParticipant::getChunk(const Point &point) {
-    for (auto &syncTree : syncTrees) {
-        if (syncTree.isPointInQuadTree(point)) {
-            return *syncTree.getChunk(point);
+        for (auto &syncTree : syncTrees) {
+            if (syncTree.isPointInQuadTree(changedPoint)) {
+
+                Chunk *c = syncTree.getChunk(changedPoint);
+                c->data++;
+                syncTree.markChangedChunk(*c);
+
+                return;
+            }
         }
+
     }
-}
 
-ChangeResponse SyncParticipant::getChanges(const std::string& path, const size_t& knownHash) {
-
-    std::vector<Point> points = QuadTree::splitPath(path, QUADTREE_SIZE * 2);
-    Point p = *points.begin();
-
-    // Shorten pointvector for use in quadtrees
-    points.erase(points.begin());
-    std::string quadTreePath = QuadTree::getPath(points.back(), QUADTREE_SIZE, points.size());
-
-    for (QuadTree &syncTree : syncTrees) {
-        if (syncTree.isPointInQuadTree(p)) {
-
-            QuadTree* requestedChangeTree = syncTree.getSubTree(quadTreePath, QUADTREE_SIZE);
-
-            if (requestedChangeTree->getHash() == knownHash) { // No change since knownHash
-                // Return an empty ChangeResponse
-                return ChangeResponse(path, 0);
-
-            } else {
-                // knownHash is not the current hash any more.
-                ChangeResponse cr(path, requestedChangeTree->getHash());
-
-                if (hashStorage.exists(knownHash)) { // Changes since known hash are still stored
-                    cr.changeVector = hashStorage.get(knownHash).second;
-                    cr.delta = true;
-                } else { // Change vector is lost, Encode full subtree
-                    cr.changeVector = requestedChangeTree->enumerateChunks();
-                    cr.delta = false;
-                }
-
-                return cr;
+    Chunk SyncParticipant::getChunk(const Point &point) {
+        for (auto &syncTree : syncTrees) {
+            if (syncTree.isPointInQuadTree(point)) {
+                return *syncTree.getChunk(point);
             }
         }
     }
-    //const std::vector<const std::string> pathComponents = QuadTree::splitPath(path);
 
-    return ChangeResponse();
+    ChangeResponse SyncParticipant::getChanges(const std::string &path, const size_t &knownHash) {
+
+        std::vector<Point> points = QuadTree::splitPath(path, QUADTREE_SIZE * 2);
+        Point p = *points.begin();
+
+        // Shorten pointvector for use in quadtrees
+        points.erase(points.begin());
+        std::string quadTreePath = QuadTree::getPath(points.back(), QUADTREE_SIZE, points.size());
+
+        for (QuadTree &syncTree : syncTrees) {
+            if (syncTree.isPointInQuadTree(p)) {
+
+                QuadTree *requestedChangeTree = syncTree.getSubTree(quadTreePath, QUADTREE_SIZE);
+
+                if (requestedChangeTree->getHash() == knownHash) { // No change since knownHash
+                    // Return an empty ChangeResponse
+                    return ChangeResponse(path, 0);
+
+                } else {
+                    // knownHash is not the current hash any more.
+                    ChangeResponse cr(path, requestedChangeTree->getHash());
+
+                    if (hashStorage.exists(knownHash)) { // Changes since known hash are still stored
+                        cr.changeVector = hashStorage.get(knownHash).second;
+                        cr.delta = true;
+                    } else { // Change vector is lost, Encode full subtree
+                        cr.changeVector = requestedChangeTree->enumerateChunks();
+                        cr.delta = false;
+                    }
+
+                    return cr;
+                }
+            }
+        }
+        //const std::vector<const std::string> pathComponents = QuadTree::splitPath(path);
+
+        return ChangeResponse();
+    }
+
 }
