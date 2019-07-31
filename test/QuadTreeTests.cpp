@@ -398,11 +398,44 @@ TEST_CASE("Encode and decode name components") {
         REQUIRE(comparePoints(subTree->getBounds().first, Point(16, 16)));
 
         size_t initialSubTreeHash = subTree->getHash();
-        tree.markChangedChunk(Chunk(Point(31,31), 1));
+        tree.markChangedChunk(Chunk(Point(31, 31), 1));
         tree.hashQuadTree();
         REQUIRE(subTree->getHash() != initialSubTreeHash);
         REQUIRE(storage.get(initialSubTreeHash).second.size() == 1);
         REQUIRE(comparePoints(Point(31, 31), (*storage.get(initialSubTreeHash).second.begin()).pos));
+
+    }
+
+}
+
+TEST_CASE("Geometry tests") {
+
+    SECTION("Point in rectangle") {
+
+        Rectangle r(Point(-10, -10), Point(10, 10));
+        REQUIRE(r.isPointInRectangle(Point(0, 0)));
+        REQUIRE(r.isPointInRectangle(Point(-10, -10)));
+        REQUIRE(r.isPointInRectangle(Point(9, 9)));
+        REQUIRE(!r.isPointInRectangle(Point(10, 10)));
+
+    }
+
+    SECTION("Overlapping rectangles") {
+        Rectangle r(Point(0, 0), Point(10, 10));
+
+        // Overlapping with itself
+        REQUIRE(r.isOverlapping(Rectangle(Point(0, 0), Point(10, 10))));
+
+        REQUIRE(!r.isOverlapping(Rectangle(Point(-10, 0), Point(0, 10))));
+        REQUIRE(!r.isOverlapping(Rectangle(Point(0, -10), Point(10, 0))));
+        REQUIRE(!r.isOverlapping(Rectangle(Point(10, 0), Point(20, 10))));
+
+        REQUIRE(r.isOverlapping(Rectangle(Point(5, 5), Point(15, 15))));
+
+
+        Rectangle r2(Point(5, 5), Point(15, 15));
+        REQUIRE(r2.isOverlapping(Rectangle(Point(0, 0), Point(10, 10))));
+        REQUIRE(r2.isOverlapping(Rectangle(Point(0, 10), Point(10, 20))));
 
     }
 

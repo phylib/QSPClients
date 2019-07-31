@@ -21,8 +21,8 @@ namespace quadtree {
     }
 
     void QuadTree::initChunks() {
-        for (int i = topLeft.x; i < botRight.x; i++) {
-            for (int j = topLeft.y; j < botRight.y; j++) {
+        for (int i = area.topleft.x; i < area.bottomRight.x; i++) {
+            for (int j = area.topleft.y; j < area.bottomRight.y; j++) {
 
                 chunks.insert(chunks.begin(), Chunk(Point(i, j), 0));
 
@@ -32,13 +32,13 @@ namespace quadtree {
     }
 
     void QuadTree::initChildren() {
-        int verticalHalf = topLeft.x + ((botRight.x - topLeft.x) / 2);
-        int horizontalHalf = topLeft.y + ((botRight.y - topLeft.y) / 2);
+        int verticalHalf = area.topleft.x + ((area.bottomRight.x - area.topleft.x) / 2);
+        int horizontalHalf = area.topleft.y + ((area.bottomRight.y - area.topleft.y) / 2);
 
-        topLeftTree = new QuadTree(Point(topLeft.x, topLeft.y), Point(verticalHalf, horizontalHalf), level + 1, this);
-        topRightTree = new QuadTree(Point(verticalHalf, topLeft.y), Point(botRight.x, horizontalHalf), level + 1, this);
-        botLeftTree = new QuadTree(Point(topLeft.x, horizontalHalf), Point(verticalHalf, botRight.y), level + 1, this);
-        botRightTree = new QuadTree(Point(verticalHalf, horizontalHalf), Point(botRight.x, botRight.y), level + 1,
+        topLeftTree = new QuadTree(Point(area.topleft.x, area.topleft.y), Point(verticalHalf, horizontalHalf), level + 1, this);
+        topRightTree = new QuadTree(Point(verticalHalf, area.topleft.y), Point(area.bottomRight.x, horizontalHalf), level + 1, this);
+        botLeftTree = new QuadTree(Point(area.topleft.x, horizontalHalf), Point(verticalHalf, area.bottomRight.y), level + 1, this);
+        botRightTree = new QuadTree(Point(verticalHalf, horizontalHalf), Point(area.bottomRight.x, area.bottomRight.y), level + 1,
                                     this);
     }
 
@@ -72,8 +72,8 @@ namespace quadtree {
 
         } else {
             // Traverse until final level
-            int verticalHalf = topLeft.x + ((botRight.x - topLeft.x) / 2);
-            int horizontalHalf = topLeft.y + ((botRight.y - topLeft.y) / 2);
+            int verticalHalf = area.topleft.x + ((area.bottomRight.x - area.topleft.x) / 2);
+            int horizontalHalf = area.topleft.y + ((area.bottomRight.y - area.topleft.y) / 2);
 
             if (point.x < verticalHalf && point.y < horizontalHalf) {
                 return topLeftTree->getChunk(_chunk, change);
@@ -97,7 +97,7 @@ namespace quadtree {
     }
 
     std::pair<Point, Point> QuadTree::getBounds() {
-        return std::pair<Point, Point>(topLeft, botRight);
+        return std::pair<Point, Point>(area.topleft, area.bottomRight);
     }
 
     std::size_t QuadTree::hashQuadTree(bool force) {
@@ -155,9 +155,8 @@ namespace quadtree {
         this->changedChunks.clear();
     }
 
-    bool QuadTree::isPointInQuadTree(Point p) {
-        return p.x >= topLeft.x && p.x < botRight.x
-               && p.y >= topLeft.y && p.y < botRight.y;
+    bool QuadTree::isPointInQuadTree(const Point& p) {
+        return area.isPointInRectangle(p);
     }
 
     std::vector<Chunk> QuadTree::enumerateChunks() {
@@ -238,8 +237,8 @@ namespace quadtree {
         Point leftUpperCorner = vector.back();
 
         // Traverse until final level
-        int verticalHalf = topLeft.x + ((botRight.x - topLeft.x) / 2);
-        int horizontalHalf = topLeft.y + ((botRight.y - topLeft.y) / 2);
+        int verticalHalf = area.topleft.x + ((area.bottomRight.x - area.topleft.x) / 2);
+        int horizontalHalf = area.topleft.y + ((area.bottomRight.y - area.topleft.y) / 2);
 
         if (leftUpperCorner.x < verticalHalf && leftUpperCorner.y < horizontalHalf) {
             return topLeftTree->getSubTree(path, quadtreeSize);

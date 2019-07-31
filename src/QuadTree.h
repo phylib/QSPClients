@@ -24,13 +24,13 @@ namespace quadtree {
 
     public:
         QuadTree(Point _topLeft, Point _bottomRight, unsigned _level)
-                : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
+                : area(_topLeft, _bottomRight), level(_level), parent(nullptr) {
 
             init();
         }
 
         QuadTree(Point _topLeft, Point _bottomRight, unsigned _level, QuadTree *parent)
-                : topLeft(_topLeft), botRight(_bottomRight), level(_level), parent(nullptr) {
+                : area(_topLeft, _bottomRight), level(_level), parent(nullptr) {
 
             init();
         }
@@ -42,7 +42,7 @@ namespace quadtree {
         Chunk *getChunk(Point point);
 
         inline bool isInMaxLevel() {
-            unsigned width = botRight.x - topLeft.x;
+            unsigned width = area.bottomRight.x - area.topleft.x;
             return level == MAX_LEVEL || width <= 2;
         }
 
@@ -64,7 +64,7 @@ namespace quadtree {
 
         std::vector<Chunk> enumerateChunks();
 
-        bool isPointInQuadTree(Point p);
+        bool isPointInQuadTree(const Point& p);
 
         QuadTree *getSubTree(const std::string &path, int quadtreeSize);
 
@@ -93,8 +93,7 @@ namespace quadtree {
         size_t hashQuadTree(bool force = false);
         // Hold details of the boundary of this node
     protected:
-        Point topLeft;
-        Point botRight;
+        Rectangle area;
         unsigned level;
 
         std::size_t hash;

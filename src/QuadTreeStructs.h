@@ -33,6 +33,10 @@ namespace quadtree {
             return p1.y < p2.y;
         }
 
+        static bool equalPointCoords(Point p1, Point p2) {
+            return p1.x == p2.x && p1.y == p2.y;
+        }
+
     };
 
     struct Chunk {
@@ -90,6 +94,26 @@ namespace quadtree {
         }
 
         Rectangle() = default;
+
+        bool isPointInRectangle(const Point &p) {
+            return p.x >= this->topleft.x && p.x < this->bottomRight.x
+                   && p.y >= this->topleft.y && p.y < this->bottomRight.y;
+        }
+
+        bool isOverlapping(const Rectangle &r2) {
+
+//            if (Point::equalPointCoords(this->topleft, r2.topleft) &&
+//                Point::equalPointCoords(this->bottomRight, r2.bottomRight)) {
+//                return true;
+//            }
+
+            // If one rectangle is on left side of other
+            if ((  this->topleft.x  >=  r2.bottomRight.x  )||  (  this->bottomRight.x  <=  r2.topleft.x  )  || (  this->topleft.y >= r2.bottomRight.y ) ||
+                (   this->bottomRight.y  <=  r2.topleft.y   ))
+                return false;
+
+            return true;
+        }
     };
 
 }
