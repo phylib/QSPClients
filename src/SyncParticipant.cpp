@@ -19,30 +19,34 @@ namespace quadtree {
 
         // Check if every chunk of all sync areas is covered by quadtrees
         for (const auto &area : syncAreas) {
-            for (int i = area.topleft.x; i < area.bottomRight.x; i++) {
-                for (int j = area.topleft.y; j < area.bottomRight.y; j++) {
+            initSyncTreeForRectangle(area);
+        }
+    }
 
-                    const Point &point = Point(i, j);
-                    bool pointInTrees = false;
-                    for (QuadTree syncTree : syncTrees) {
-                        if (syncTree.isPointInQuadTree(point)) {
-                            pointInTrees = true;
-                            break;
-                        }
+    void SyncParticipant::initSyncTreeForRectangle(const Rectangle &area) {
+        for (int i = area.topleft.x; i < area.bottomRight.x; i++) {
+            for (int j = area.topleft.y; j < area.bottomRight.y; j++) {
 
-                    }
-
-                    // For points not beeing covered, a new quadtree is build
-                    if (!pointInTrees) {
-                        // Init QuadTree
-                        int quadTreeX = floor(point.x / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
-                        int quadTreeY = floor(point.y / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
-                        QuadTree quadTree(Point(quadTreeX, quadTreeY), Point(quadTreeX + 32, quadTreeY + 32), 1);
-                        quadTree.setHashStorage(this->hashStorage);
-                        this->syncTrees.insert(this->syncTrees.begin(), quadTree);
+                const Point &point = Point(i, j);
+                bool pointInTrees = false;
+                for (QuadTree syncTree : syncTrees) {
+                    if (syncTree.isPointInQuadTree(point)) {
+                        pointInTrees = true;
+                        break;
                     }
 
                 }
+
+                // For points not beeing covered, a new quadtree is build
+                if (!pointInTrees) {
+                    // Init QuadTree
+                    int quadTreeX = floor(point.x / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
+                    int quadTreeY = floor(point.y / (double) QUADTREE_SIZE) * QUADTREE_SIZE;
+                    QuadTree quadTree(Point(quadTreeX, quadTreeY), Point(quadTreeX + 32, quadTreeY + 32), 1);
+                    quadTree.setHashStorage(hashStorage);
+                    syncTrees.insert(syncTrees.begin(), quadTree);
+                }
+
             }
         }
     }
@@ -113,6 +117,16 @@ namespace quadtree {
         //const std::vector<const std::string> pathComponents = QuadTree::splitPath(path);
 
         return ChangeResponse();
+    }
+
+    const std::vector<RemoteSyncArea> &SyncParticipant::getRemoteSyncAreas() const {
+        return remoteSyncAreas;
+    }
+
+    void SyncParticipant::setRemoteSyncAreas(const std::vector<RemoteSyncArea> &remoteSyncAreas) {
+        this->remoteSyncAreas = remoteSyncAreas;
+
+        initSyncTrees();
     }
 
 }

@@ -139,4 +139,29 @@ TEST_CASE("Apply changes to the sync area of the sync participant and check if h
 
     }
 
+    SECTION("Get RequestPaths for remote Regions") {
+
+        std::vector<Rectangle> syncAreas;
+        syncAreas.insert(syncAreas.begin(), Rectangle(Point(0, 0), Point(64, 64)));
+        SyncParticipant participant;
+        participant.setSyncAreas(syncAreas);
+
+        std::vector<RemoteSyncArea> remoteAreas;
+
+        // s1
+        std::vector<Rectangle> remoteArea;
+        remoteArea.insert(remoteArea.begin(), Rectangle(Point(0, 64), Point(64, 128)));
+        remoteAreas.insert(remoteAreas.begin(), std::pair("s1", remoteArea));
+        // s2
+        remoteArea.clear();
+        remoteArea.insert(remoteArea.begin(), Rectangle(Point(64, 0), Point(128, 64)));
+        remoteAreas.insert(remoteAreas.begin(), std::pair("s2", remoteArea));
+        // s3
+        remoteArea.clear();
+        remoteArea.insert(remoteArea.begin(), Rectangle(Point(64, 64), Point(128, 128)));
+        remoteAreas.insert(remoteAreas.begin(), std::pair("s3", remoteArea));
+        participant.setRemoteSyncAreas(remoteAreas);
+
+    }
+
 }

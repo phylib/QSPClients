@@ -10,7 +10,13 @@
 
 #include "QuadTree.h"
 
+
 namespace quadtree {
+
+    /**
+     * A remote sync area consists of a string identifying the server hosting it and a list of rectangles.
+     */
+    typedef std::tuple<std::string, std::vector<Rectangle>> RemoteSyncArea;
 
 /**
  * A SyncParticipant is a player managing one or multiple areas of the game world.
@@ -40,6 +46,14 @@ namespace quadtree {
         void setSyncAreas(std::vector<Rectangle> areas);
 
         /**
+         * Get the remote sync areas observed by the current sync client
+         * @return
+         */
+        const std::vector<RemoteSyncArea> &getRemoteSyncAreas() const;
+
+        void setRemoteSyncAreas(const std::vector<RemoteSyncArea> &remoteSyncAreas);
+
+        /**
          * Generates a new version of the hash trees.
          */
         void reHash();
@@ -60,10 +74,14 @@ namespace quadtree {
     private:
         void initSyncTrees();
 
+        void initSyncTreeForRectangle(const Rectangle &area);
+
     private:
         std::vector<Rectangle> syncAreas;
         std::vector<QuadTree> syncTrees;
         HashStorage hashStorage;
+
+        std::vector<RemoteSyncArea> remoteSyncAreas;
     };
 
 }

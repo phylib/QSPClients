@@ -64,7 +64,7 @@ namespace quadtree {
 
         std::vector<Chunk> enumerateChunks();
 
-        bool isPointInQuadTree(const Point& p);
+        bool isPointInQuadTree(const Point& p) const;
 
         QuadTree *getSubTree(const std::string &path, int quadtreeSize);
 

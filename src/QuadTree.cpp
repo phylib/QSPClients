@@ -155,7 +155,7 @@ namespace quadtree {
         this->changedChunks.clear();
     }
 
-    bool QuadTree::isPointInQuadTree(const Point& p) {
+    bool QuadTree::isPointInQuadTree(const Point& p) const {
         return area.isPointInRectangle(p);
     }
 

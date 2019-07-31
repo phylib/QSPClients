@@ -426,17 +426,23 @@ TEST_CASE("Geometry tests") {
         // Overlapping with itself
         REQUIRE(r.isOverlapping(Rectangle(Point(0, 0), Point(10, 10))));
 
+        // Not overlapping
         REQUIRE(!r.isOverlapping(Rectangle(Point(-10, 0), Point(0, 10))));
         REQUIRE(!r.isOverlapping(Rectangle(Point(0, -10), Point(10, 0))));
         REQUIRE(!r.isOverlapping(Rectangle(Point(10, 0), Point(20, 10))));
 
+        // Real overlap
         REQUIRE(r.isOverlapping(Rectangle(Point(5, 5), Point(15, 15))));
+        // r2 in r1
+        REQUIRE(r.isOverlapping(Rectangle(Point(2, 2), Point(4, 4))));
 
 
         Rectangle r2(Point(5, 5), Point(15, 15));
+        // Real overlap
         REQUIRE(r2.isOverlapping(Rectangle(Point(0, 0), Point(10, 10))));
         REQUIRE(r2.isOverlapping(Rectangle(Point(0, 10), Point(10, 20))));
-
+        // Rectangle in rectangle
+        REQUIRE(r2.isOverlapping(Rectangle(Point(6, 6), Point(7, 7))));
     }
 
 }

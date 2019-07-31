@@ -95,12 +95,12 @@ namespace quadtree {
 
         Rectangle() = default;
 
-        bool isPointInRectangle(const Point &p) {
+        bool isPointInRectangle(const Point &p) const {
             return p.x >= this->topleft.x && p.x < this->bottomRight.x
                    && p.y >= this->topleft.y && p.y < this->bottomRight.y;
         }
 
-        bool isOverlapping(const Rectangle &r2) {
+        bool isOverlapping(const Rectangle &r2) const {
 
 //            if (Point::equalPointCoords(this->topleft, r2.topleft) &&
 //                Point::equalPointCoords(this->bottomRight, r2.bottomRight)) {
