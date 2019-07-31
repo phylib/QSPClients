@@ -98,7 +98,7 @@ TEST_CASE("Apply changes to the sync area of the sync participant and check if h
         REQUIRE(secondChild.changeVector.size() == 16*16);
 
 
-        Point p(3, 3);
+        Point p(10, 20);
         participant.applyChange(p);
         participant.reHash();
 
@@ -107,7 +107,19 @@ TEST_CASE("Apply changes to the sync area of the sync participant and check if h
         REQUIRE(root0v2.changeVector.size() == 1);
         REQUIRE(root0.currentHash != root0v2.currentHash);
 
-        ChangeResponse root1v2 = participant.getChanges("/1,0/", root0.currentHash);
+        ChangeResponse firstChildv2 = participant.getChanges("/0,0/0,1/", firstChild.currentHash);
+        REQUIRE(firstChildv2.delta);
+        REQUIRE(firstChildv2.changeVector.size() == 1);
+
+        ChangeResponse childOfFirstChildv2 = participant.getChanges("/0,0/0,1/1,2/", childOfFirstChild.currentHash);
+        REQUIRE(childOfFirstChildv2.delta);
+        REQUIRE(!childOfFirstChildv2.isEmpty());
+        REQUIRE(childOfFirstChildv2.changeVector.size() == 1);
+
+        ChangeResponse secondChildv2 = participant.getChanges("/0,0/1,1/", secondChild.currentHash);
+        REQUIRE(secondChildv2.isEmpty());
+
+        ChangeResponse root1v2 = participant.getChanges("/1,0/", root1.currentHash);
         REQUIRE(root1v2.isEmpty());
 
 

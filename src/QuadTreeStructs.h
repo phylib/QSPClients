@@ -71,9 +71,10 @@ struct ChangeResponse {
     bool delta;
     std::vector<Chunk> changeVector;
 
-    ChangeResponse() {}
+    ChangeResponse() : path(""), currentHash(0), delta(false), changeVector() {}
 
-    ChangeResponse(const std::string &path, size_t currentHash) : path(path), currentHash(currentHash) {}
+    ChangeResponse(const std::string path, size_t currentHash)
+            : path(path), currentHash(currentHash), delta(false), changeVector() {}
 
     bool isEmpty() {
         return currentHash == 0 && changeVector.empty();
