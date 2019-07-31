@@ -216,10 +216,11 @@ QuadTree::getLeftUpperCornerFromPathComponent(const std::string &pathComponent, 
 std::string QuadTree::getPath(const Point &point, int quadtreeSize, unsigned levels) {
 
     std::string path = "/";
-    for (int i = 1; i <= levels; i++) {
-        path = "/" + std::to_string(int(floor(point.x / (double) pow(2, i)))) + ","
-               + std::to_string(int(floor(point.y / (double) pow(2, i))))
-               + path;
+    int max_exp = (int) log2(quadtreeSize) - 1;
+    for (int i = 0; i < levels; i++) {
+        path += std::to_string(int(floor(point.x / (double) pow(2, max_exp - i)))) + ","
+               + std::to_string(int(floor(point.y / (double) pow(2, max_exp - i))))
+               + "/";
     }
 
     return path;

@@ -341,6 +341,37 @@ TEST_CASE("Encode and decode name components") {
         test = "/-1,-2/-2,-3/-4,-6/-7,-11/";
         REQUIRE(test.compare(QuadTree::getPath(Point(-13, -21), 32)) == 0);
 
+        test = "/0,1/1,2/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 32, 2)) == 0);
+        test = "/0,1/1,2/2,5/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 32, 3)) == 0);
+        test = "/0,1/1,2/2,5/5,10/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 32, 4)) == 0);
+
+        test = "/0,0/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 64, 1)) == 0);
+        test = "/0,0/0,1/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 64, 2)) == 0);
+        test = "/0,0/0,1/1,2/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 64, 3)) == 0);
+        test = "/0,0/0,1/1,2/2,5/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 64, 4)) == 0);
+        test = "/0,0/0,1/1,2/2,5/5,10/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 64, 5)) == 0);
+
+        test = "/0,0/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 1)) == 0);
+        test = "/0,0/0,0/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 2)) == 0);
+        test = "/0,0/0,0/0,1/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 3)) == 0);
+        test = "/0,0/0,0/0,1/1,2/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 4)) == 0);
+        test = "/0,0/0,0/0,1/1,2/2,5/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 5)) == 0);
+        test = "/0,0/0,0/0,1/1,2/2,5/5,10/";
+        REQUIRE(test.compare(QuadTree::getPath(Point(10, 20), 128, 6)) == 0);
+
     }
 
     SECTION("Tree based information retrieval") {
