@@ -26,3 +26,8 @@ add_executable(SyncParticipantsTests test/SyncParticipantTests.cpp
         src/datastore/HashStorage.cpp src/datastore/HashStorage.h
         src/QuadTreeStructs.h)
 target_link_libraries(SyncParticipantsTests Catch2::Catch2)
+
+add_executable(SyncTreeTests test/SyncTreeTests.cpp
+        src/QuadTreeStructs.h
+        src/SyncTree.cpp src/SyncTree.h)
+target_link_libraries(SyncTreeTests Catch2::Catch2)
