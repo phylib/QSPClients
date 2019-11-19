@@ -52,9 +52,9 @@ TEST_CASE("Initialization of a SyncParticipants and Quadtrees covering it's area
     }
 }
 
-TEST_CASE("Apply changes to the sync area of the sync participant and check if hash trees are changed correctly") {
+TEST_CASE("Apply storedChanges to the sync area of the sync participant and check if hash trees are changed correctly") {
 
-    SECTION("Check if a chunk changes are applied correctly") {
+    SECTION("Check if a chunk storedChanges are applied correctly") {
         std::vector<Rectangle> syncAreas;
         syncAreas.insert(syncAreas.begin(), Rectangle(Point(-10, 0), Point(10, 10)));
         SyncParticipant participant;

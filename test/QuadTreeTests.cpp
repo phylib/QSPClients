@@ -161,7 +161,7 @@ TEST_CASE("Change parts of a QuadTree", "[quadTree]") {
 
 TEST_CASE("Test QuadTree Hash Functions") {
 
-    SECTION("The hash of a tree must change when a chunk changes") {
+    SECTION("The hash of a tree must change when a chunk storedChanges") {
         QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         size_t initial_hash = quadTree.hashQuadTree();
@@ -172,7 +172,7 @@ TEST_CASE("Test QuadTree Hash Functions") {
         REQUIRE(initial_hash != quadTree.getHash());
     }
 
-    SECTION("The hash of an unchanged subtree must not change when a chunk changes") {
+    SECTION("The hash of an unchanged subtree must not change when a chunk storedChanges") {
         QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         size_t tl = quadTree.topLeftTree->hashQuadTree();
@@ -197,7 +197,7 @@ TEST_CASE("Test QuadTree Hash Functions") {
         REQUIRE(tree1.hashQuadTree() == tree2.hashQuadTree());
     }
 
-    SECTION("The changes of a QuadTree must be empty after rehashing") {
+    SECTION("The storedChanges of a QuadTree must be empty after rehashing") {
         QuadTree quadTree(Point(0, 0), Point(4, 4), 1);
 
         quadTree.markChangedChunk(Chunk(Point(3, 0), 3));
