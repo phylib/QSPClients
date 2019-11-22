@@ -47,10 +47,7 @@ Chunk* SyncTree::change(unsigned int x, unsigned int y)
     return c;
 }
 
-Chunk* SyncTree::inflateChunk(unsigned x, unsigned y)
-{
-    return inflateChunk(x, y, false);
-}
+Chunk* SyncTree::inflateChunk(unsigned x, unsigned y) { return inflateChunk(x, y, false); }
 
 Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
 {
@@ -118,31 +115,37 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
 
 std::size_t SyncTree::getHash() { return currentHash; }
 
-void SyncTree::reHash()
+void SyncTree::reHash(bool force)
 {
-    std::size_t hash_value = 0;
-    boost::hash_combine(hash_value, area.topleft.x);
-    boost::hash_combine(hash_value, area.topleft.y);
-    boost::hash_combine(hash_value, area.bottomRight.x);
-    boost::hash_combine(hash_value, area.bottomRight.y);
+    if (force || !changedChunks.empty()) {
+        std::size_t hash_value = 0;
+        boost::hash_combine(hash_value, area.topleft.x);
+        boost::hash_combine(hash_value, area.topleft.y);
+        boost::hash_combine(hash_value, area.bottomRight.x);
+        boost::hash_combine(hash_value, area.bottomRight.y);
 
-    for (SyncTree* child : childs) {
-        if (child != nullptr) {
-            child->reHash();
-            boost::hash_combine(hash_value, child->getHash());
+        for (SyncTree* child : childs) {
+            if (child != nullptr) {
+                child->reHash(force);
+                boost::hash_combine(hash_value, child->getHash());
+            }
+        }
+
+        for (Chunk* chunk : data) {
+            if (chunk != nullptr) {
+                boost::hash_combine(hash_value, chunk->hashChunk());
+            }
+        }
+
+        // Only store "new revision" if something in the tree changed
+        if (this->currentHash != hash_value) {
+
+            this->storedChanges = std::pair(this->currentHash, changedChunks);
+
+            this->currentHash = hash_value;
+            this->changedChunks = std::vector<Chunk*>();
         }
     }
-
-    for (Chunk* chunk : data) {
-        if (chunk != nullptr) {
-            boost::hash_combine(hash_value, chunk->hashChunk());
-        }
-    }
-
-    this->storedChanges = std::pair(this->currentHash, changedChunks);
-
-    this->currentHash = hash_value;
-    this->changedChunks = std::vector<Chunk*>();
 }
 
 std::pair<bool, std::vector<Chunk*>> SyncTree::getChanges(std::size_t since)

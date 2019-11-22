@@ -32,7 +32,7 @@ public:
     {
         checkDimensions();
         initChilds();
-        reHash();
+        reHash(true);
     }
 
     SyncTree(Rectangle area, SyncTree* parent, unsigned level, int numchilds = 4)
@@ -45,7 +45,7 @@ public:
     {
         checkDimensions();
         initChilds();
-        reHash();
+        reHash(true);
     }
 
     ~SyncTree()
@@ -113,9 +113,12 @@ public:
     /**
      * Rehashes the sync tree node and all its childs nodes.
      *
+     * For performance reasons, it rehash is only performed if chunks of the subtree changed, except the force flag
+     * is set.
+     *
      * For descriptions about the hash, see the getHash(..) method.
      */
-    void reHash();
+    void reHash(bool force = false);
 
     /**
      * Returns pointers to changed chunks since the given hash

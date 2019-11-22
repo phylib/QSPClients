@@ -142,6 +142,11 @@ SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
 
             THEN("the chunk returned by the first change call should have an version of 2") { REQUIRE(c->data == 2); }
         }
+
+        WHEN("nothing changed")
+        {
+            THEN("None of the subtree hashes should be 0") { REQUIRE(tree.getHash() != 0); }
+        }
     }
 
     GIVEN("A 65536x65536 area is covered by an empty SyncTree")
@@ -361,18 +366,15 @@ SCENARIO("Test hash functions of the sync tree")
                 // second quarter
                 std::pair<bool, std::vector<Chunk*>> changes
                     = tree.getChanges(second_q_hash, Rectangle(Point(0, 32768), Point(32768, 65536)));
-                REQUIRE(changes.first);
-                REQUIRE(changes.second.empty());
+                REQUIRE(!changes.first);
 
                 // third quarter
                 changes = tree.getChanges(third_q_hash, Rectangle(Point(32768, 0), Point(65536, 32768)));
-                REQUIRE(changes.first);
-                REQUIRE(changes.second.empty());
+                REQUIRE(!changes.first);
 
                 // fourth quarter
                 changes = tree.getChanges(fourth_q_hash, Rectangle(Point(32768, 32768), Point(65536, 65536)));
-                REQUIRE(changes.first);
-                REQUIRE(changes.second.empty());
+                REQUIRE(!changes.first);
             }
         }
     }
