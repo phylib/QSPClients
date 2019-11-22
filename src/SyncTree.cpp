@@ -47,6 +47,14 @@ Chunk* SyncTree::change(unsigned int x, unsigned int y)
     return c;
 }
 
+Chunk* SyncTree::change(unsigned int x, unsigned int y, unsigned version)
+{
+    Chunk* c = inflateChunk(x, y, true);
+    c->data = version;
+
+    return c;
+}
+
 Chunk* SyncTree::inflateChunk(unsigned x, unsigned y) { return inflateChunk(x, y, false); }
 
 Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)

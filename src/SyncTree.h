@@ -89,12 +89,24 @@ public:
 
     /**
      * Increases the version of the chunk on position x, y
+     *
      * @param x X-Coordinate of the chunk to change
      * @param y Y-Coordinate of the chunk to change
      *
      * @return Pointer to the changed chunk
      */
     Chunk* change(unsigned x, unsigned y);
+
+    /**
+     * Sets the version of the chunk on position x, y to a certain value
+     *
+     * @param x X-Coordinate of the chunk to change
+     * @param y Y-Coordinate of the chunk to change
+     * @param version New version of the chunk on position x,y
+     *
+     * @return Pointer to the changed chunk
+     */
+    Chunk* change(unsigned x, unsigned y, unsigned version);
 
     /**
      * Returns the current hash of the sync tree node. The hash includes the following fields:
