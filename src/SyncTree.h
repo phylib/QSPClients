@@ -30,6 +30,7 @@ public:
         , currentHash(0)
         , storedChanges(0, std::vector<Chunk*>())
     {
+        checkDimensions();
         initChilds();
         reHash();
     }
@@ -42,6 +43,7 @@ public:
         , currentHash(0)
         , storedChanges(0, std::vector<Chunk*>())
     {
+        checkDimensions();
         initChilds();
         reHash();
     }
@@ -121,17 +123,47 @@ public:
      * The function returns a tuple, where the first entry is a boolean and indicates of the queried hash value is
      * known. If an too old hash value is queried, the hash value is not known any more and false is returned.
      *
-     * Only the most recent state is stored,.
+     * Only the most recent state is stored.
      *
      * @param since Hash which is used for querying
      * @return Boolean if query was successful and Pointers to the changed chunks
      */
     std::pair<bool, std::vector<Chunk*>> getChanges(std::size_t since);
 
+    /**
+     * Returns pointers to changed chunks in the given region since the given hash.
+     *
+     * The function returns a tuple, where the first entry is a boolean and indicates of the queried hash value is
+     * known. If an too old hash value is queried, the hash value is not known any more and false is returned.
+     *
+     * Only the most recent state is stored.
+     *
+     * @param since Hash which is used for querying
+     * @param subtree Region to query
+     * @return Boolean if query was successful and Pointers to the changed chunks
+     */
+    std::pair<bool, std::vector<Chunk*>> getChanges(std::size_t since, Rectangle subtree);
+
+    /**
+     * Returns a pointer to the subtree which covers the given region. Null, if the subtree is not inflated yet
+     *
+     * @param rectangle Region to query
+     * @return Pointer to the SyncTree covering the given region
+     */
+    SyncTree* getSubtree(Rectangle rectangle);
+
 private:
     void initChilds();
 
+    static bool isPowerOfTwo(ulong x);
+
+    void checkDimensions();
+
+    static void checkDimensions(const Rectangle& rect);
+
     Chunk* inflateChunk(unsigned x, unsigned y);
+
+    Chunk* inflateChunk(unsigned x, unsigned y, bool rememberChanged);
 
 protected:
     Rectangle area;
