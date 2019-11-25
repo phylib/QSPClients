@@ -191,8 +191,6 @@ SyncTree* SyncTree::getSubtree(Rectangle rectangle)
     // Check if the given rectangle is a power of two and a sqare
     checkDimensions(rectangle);
 
-    // The size of the requested
-
     // Check if the given rectangle is part of the tree
     if (rectangle.topleft.x < area.topleft.x || rectangle.bottomRight.x > area.bottomRight.x
         || rectangle.topleft.y < area.topleft.y || rectangle.bottomRight.y > area.bottomRight.y) {
@@ -235,6 +233,53 @@ std::pair<bool, std::vector<Chunk*>> SyncTree::getChanges(std::size_t since, Rec
     }
 
     return subtreePointer->getChanges(since);
+}
+std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y) {
+
+    // Check if the given rectangle is part of the tree
+    if (x < area.topleft.x || x >= area.bottomRight.x
+        || y < area.topleft.y || y >= area.bottomRight.y) {
+        throw std::invalid_argument("Requested chunk is not part of the current tree");
+    }
+
+    Rectangle current = this->area;
+    std::vector<unsigned char> pathComponents;
+
+    while (current.bottomRight.x - current.topleft.x >= 2) {
+
+        unsigned xHalf = current.topleft.x + ((current.bottomRight.x - current.topleft.x) / 2);
+        unsigned yHalf = current.topleft.y + ((current.bottomRight.y - current.topleft.y) / 2);
+        unsigned char index;
+        bool firstXHalf = true, firstYHalf = true;
+
+        if (x < xHalf && y < yHalf) { // topleft
+            index = 0;
+            firstXHalf = true;
+            firstYHalf = true;
+        } else if (x >= xHalf && y < yHalf) { // topright
+            index = 1;
+            firstXHalf = false;
+            firstYHalf = true;
+        } else if (x < xHalf && y >= yHalf) {
+            index = 2;
+            firstXHalf = true;
+            firstYHalf = false;
+        } else {
+            index = 3;
+            firstXHalf = false;
+            firstYHalf = false;
+        }
+
+        pathComponents.insert(pathComponents.end(), index);
+
+        Point p1(firstXHalf ? current.topleft.x : xHalf, firstYHalf ? current.topleft.y : yHalf);
+        Point p2(
+            p1.x + (current.bottomRight.x - current.topleft.x) / 2, p1.y + (current.bottomRight.y - current.topleft.y) / 2);
+        current = Rectangle(p1, p2);
+
+    }
+
+    return pathComponents;
 }
 
 }

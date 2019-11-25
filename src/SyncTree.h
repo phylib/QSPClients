@@ -167,6 +167,22 @@ public:
      */
     SyncTree* getSubtree(Rectangle rectangle);
 
+    /**
+     * Returns the path to a given chunk, based on the current tree node. The path of a chunk consists of several
+     * path components, where each component represents one level of a tree. Each component is a number defining
+     * the quadrant of the tree where the chunk is located.
+     *
+     * Example:
+     * For a 8x8 tree, the name of the field 3,3 is the following:
+     * /0/3/3, where 0 stands for the area 0,0-3,3; the first number 3 for the area 2,2-3,3 and the second number 3
+     * for the chunk 3,3.
+     *
+     * @param x X-Coordinate of the chunk
+     * @param y Y-Coordinate of the chunk
+     * @return The name of the chunk
+     */
+    std::vector<unsigned char> getChunkPath(unsigned x, unsigned y);
+
 private:
     void initChilds();
 

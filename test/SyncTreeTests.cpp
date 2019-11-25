@@ -92,6 +92,32 @@ TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
         rect = Rectangle(p1, p2);
         REQUIRE_THROWS(SyncTree(rect));
     }
+
+    SECTION("Test the getChunkPath function") {
+
+        Rectangle rectangle(Point(0, 0), Point(8, 8));
+        SyncTree tree(rectangle);
+
+        std::vector<unsigned char> path = tree.getChunkPath(0, 0);
+        REQUIRE(path.size() == 3);
+        REQUIRE(path.at(0) == 0);
+        REQUIRE(path.at(1) == 0);
+        REQUIRE(path.at(2) == 0);
+
+        path = tree.getChunkPath(7, 7);
+        REQUIRE(path.size() == 3);
+        REQUIRE(path.at(0) == 3);
+        REQUIRE(path.at(1) == 3);
+        REQUIRE(path.at(2) == 3);
+
+        path = tree.getChunkPath(4, 2);
+        REQUIRE(path.size() == 3);
+        REQUIRE(path.at(0) == 1);
+        REQUIRE(path.at(1) == 2);
+        REQUIRE(path.at(2) == 0);
+
+        REQUIRE_THROWS(tree.getChunkPath(8, 3));
+    }
 }
 
 SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
@@ -377,5 +403,25 @@ SCENARIO("Test hash functions of the sync tree")
                 REQUIRE(!changes.first);
             }
         }
+
+//        WHEN("every single chunk in the tree changes")
+//        {
+//
+//            // Todo: Disable this test case
+//
+//            for (unsigned i = 0; i < treeDimension; i++) {
+//                for (unsigned j = 0; j < treeDimension; j++) {
+//                    tree.change(i, j);
+//                }
+//            }
+//            tree.reHash();
+//
+//            THEN("The number of changed chunks should be 65536x65536")
+//            {
+//                const std::pair<bool, std::vector<Chunk*>>& changes = tree.getChanges(initial_hash);
+//                REQUIRE(changes.first);
+//                REQUIRE(changes.second.size() == treeDimension * treeDimension);
+//            }
+//        }
     }
 }
