@@ -6,6 +6,7 @@
 #define QUADTREESYNCEVALUATION_QUADTREESTRUCTS_H
 
 #include <boost/functional/hash.hpp>
+#include <ostream>
 
 namespace quadtree {
 
@@ -67,6 +68,12 @@ namespace quadtree {
 
         static bool chunkCoordMatch(Chunk c1, Chunk c2) {
             return c1.pos.x == c2.pos.x && c1.pos.y == c2.pos.y;
+        }
+
+        friend std::ostream& operator<<(std::ostream& os, const Chunk& chunk)
+        {
+            os << "Chunk(pos: " << chunk.pos.x << "," << chunk.pos.y << " data: " << chunk.data << ")";
+            return os;
         }
     };
 

@@ -25,6 +25,25 @@ unsigned SyncTree::countInflatedNodes()
     return numInflatedChildren;
 }
 
+unsigned SyncTree::countInflatedChunks()
+{
+    unsigned numInflatedChunks = 0;
+
+    for (SyncTree* child : childs) {
+        if (child != nullptr) {
+            numInflatedChunks += child->countInflatedChunks();
+        }
+    }
+
+    for (Chunk* chunk : data) {
+        if (chunk != nullptr) {
+            numInflatedChunks++;
+        }
+    }
+
+    return numInflatedChunks;
+}
+
 void SyncTree::initChilds()
 {
     if (!finalLevel()) {
@@ -234,11 +253,11 @@ std::pair<bool, std::vector<Chunk*>> SyncTree::getChanges(std::size_t since, Rec
 
     return subtreePointer->getChanges(since);
 }
-std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y) {
+std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
+{
 
     // Check if the given rectangle is part of the tree
-    if (x < area.topleft.x || x >= area.bottomRight.x
-        || y < area.topleft.y || y >= area.bottomRight.y) {
+    if (x < area.topleft.x || x >= area.bottomRight.x || y < area.topleft.y || y >= area.bottomRight.y) {
         throw std::invalid_argument("Requested chunk is not part of the current tree");
     }
 
@@ -273,10 +292,9 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y) {
         pathComponents.insert(pathComponents.end(), index);
 
         Point p1(firstXHalf ? current.topleft.x : xHalf, firstYHalf ? current.topleft.y : yHalf);
-        Point p2(
-            p1.x + (current.bottomRight.x - current.topleft.x) / 2, p1.y + (current.bottomRight.y - current.topleft.y) / 2);
+        Point p2(p1.x + (current.bottomRight.x - current.topleft.x) / 2,
+            p1.y + (current.bottomRight.y - current.topleft.y) / 2);
         current = Rectangle(p1, p2);
-
     }
 
     return pathComponents;

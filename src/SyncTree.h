@@ -79,6 +79,12 @@ public:
     unsigned countInflatedNodes();
 
     /**
+     * Traverses the tree and counts the number of inflated chunks (Excludes all non-leaf nodes, only chunks)
+     * @return Number of inclated chunks
+     */
+    unsigned countInflatedChunks();
+
+    /**
      * Returns the area covered by the tree
      *
      * @return area covered by the tree

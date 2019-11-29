@@ -159,6 +159,10 @@ SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
                 }
             }
             THEN("85 nodes have to be inflated") { REQUIRE(tree.countInflatedNodes() == 85); }
+
+            THEN("84 chunks have to be inflated") {
+                REQUIRE(tree.countInflatedChunks() == 64);
+            }
         }
 
         WHEN("A single chunk storedChanges twice")
