@@ -9,10 +9,10 @@ FIND_PACKAGE( Boost 1.65 COMPONENTS REQUIRED )
 INCLUDE_DIRECTORIES( ${Boost_INCLUDE_DIR} )
 
 
-add_executable(QuadTreeSyncEvaluation src/main.cpp
-        src/QuadTree.cpp src/QuadTree.h
-        src/datastore/HashStorage.cpp src/datastore/HashStorage.h
-        src/QuadTreeStructs.h)
+add_executable(SyncTreeEvaluation src/main.cpp
+        src/QuadTreeStructs.h
+        src/SyncTree.cpp src/SyncTree.h
+        src/csv/CSVReader.cpp src/csv/CSVReader.h)
 
 add_executable(QuadTreeTests test/QuadTreeTests.cpp
         src/QuadTree.cpp src/QuadTree.h
