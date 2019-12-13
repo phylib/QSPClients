@@ -446,3 +446,76 @@ SCENARIO("Test hash functions of the sync tree")
         //        }
     }
 }
+
+SCENARIO("Test function that delivers Hash-Values of N-Levels")
+{
+    GIVEN("A 65536x65536 area is covered by an empty SyncTree")
+    {
+        unsigned treeDimension = 65536;
+        Rectangle rectangle(Point(0, 0), Point(treeDimension, treeDimension));
+        SyncTree tree(rectangle);
+
+        REQUIRE(tree.countInflatedNodes() == 1);
+        const Rectangle& area = tree.getArea();
+        REQUIRE(area.bottomRight.x - area.topleft.x == treeDimension);
+        REQUIRE(area.bottomRight.y - area.topleft.y == treeDimension);
+        std::size_t initial_hash = tree.getHash();
+
+        WHEN("no change is performed")
+        {
+
+            THEN(
+                "When requesting hash-values of the next 3 levels should deliver the non-empty root and 1 empty levels")
+            {
+
+                std::map<unsigned, std::vector<size_t>> hashValues = tree.hashValuesOfNextNLevels(3);
+                REQUIRE(hashValues.size() == 3);
+
+                REQUIRE(hashValues[1].at(0) == initial_hash);
+                for (int i = 0; i < 4; i++) {
+                    REQUIRE(hashValues[2].at(i) == 0);
+                }
+                for (int i = 0; i < 16; i++) {
+                    REQUIRE(hashValues[3].at(i) == 0);
+                }
+            }
+        }
+
+        WHEN("a change in the third quarter is performed")
+        {
+            tree.change(treeDimension / 2 - 10, treeDimension / 2 + 10);
+            tree.reHash();
+
+            THEN("the hash values of the other quarters should be zero")
+            {
+
+                std::map<unsigned, std::vector<size_t>> hashValues = tree.hashValuesOfNextNLevels(4);
+                REQUIRE(hashValues.size() == 4);
+
+                REQUIRE(hashValues[1].size() == 1);
+                REQUIRE(hashValues[2].size() == 4);
+                REQUIRE(hashValues[3].size() == 16);
+                REQUIRE(hashValues[4].size() == 64);
+
+                REQUIRE(hashValues[2].at(0) == 0);
+                REQUIRE(hashValues[2].at(1) == 0);
+                REQUIRE(hashValues[2].at(2) != 0);
+                REQUIRE(hashValues[2].at(3) == 0);
+
+                for (int i = 0; i < 8; i++) {
+                    REQUIRE(hashValues[3].at(i) == 0);
+                }
+                for (int i = 12; i < 16; i++) {
+                    REQUIRE(hashValues[3].at(i) == 0);
+                }
+
+                for (int i = 0; i < 32; i++) {
+                    REQUIRE(hashValues[4].at(i) == 0);
+                }
+                for (int i = 48; i < 64; i++) {
+                    REQUIRE(hashValues[4].at(i) == 0);
+                }
+            }
+        }
+    }
+}

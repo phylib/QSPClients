@@ -10,8 +10,9 @@
 #include "QuadTreeStructs.h"
 
 #include <boost/functional/hash.hpp>
-#include <vector>
 #include <map>
+#include <vector>
+#include <math.h>
 
 namespace quadtree {
 
@@ -189,6 +190,19 @@ public:
      * @return The name of the chunk
      */
     std::vector<unsigned char> getChunkPath(unsigned x, unsigned y);
+
+    /**
+     * Returns the hash-values of N-levels of the SyncTree. For implementation, the method calls itself iteratively.
+     *
+     * One characteristic of the method is that every level of the tree is fully added to the hashMap. Otherwise,
+     * a mapping between tree-node and hash-value can not be created any more.
+     *
+     * @param nextNLevels
+     * @param hashValues The hash-map containing the syncTree's hash-values
+     * @return The hash-map containing the syncTree's hash-values
+     */
+    std::map<unsigned, std::vector<size_t>> hashValuesOfNextNLevels(unsigned nextNLevels,
+        std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>());
 
 private:
     void initChilds();
