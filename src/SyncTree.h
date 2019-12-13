@@ -11,8 +11,8 @@
 
 #include <boost/functional/hash.hpp>
 #include <map>
-#include <vector>
 #include <math.h>
+#include <vector>
 
 namespace quadtree {
 
@@ -192,19 +192,15 @@ public:
     std::vector<unsigned char> getChunkPath(unsigned x, unsigned y);
 
     /**
-     * Returns the hash-values of N-levels of the SyncTree. For implementation, the method calls itself iteratively.
-     *
-     * One characteristic of the method is that every level of the tree is fully added to the hashMap. Otherwise,
-     * a mapping between tree-node and hash-value can not be created any more.
-     *
-     * @param nextNLevels
-     * @param hashValues The hash-map containing the syncTree's hash-values
-     * @return The hash-map containing the syncTree's hash-values
+     * Returns the hash values of the nextNLevels and the number of changes since the provided hash value, iff the
+     * provided hash-value is known. If not, -1 is returned as number of changes.
+     * @param nextNLevels Number of levels where hash entries are returned
+     * @param since Known hash value of the subtree
+     * @return Hash values of the subtrees and the number of changes since the provided hash value
      */
-    std::map<unsigned, std::vector<size_t>> hashValuesOfNextNLevels(unsigned nextNLevels,
-        std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>());
+    std::pair<std::map<unsigned, std::vector<size_t>>, int> hashValuesOfNextNLevels(unsigned nextNLevels, size_t since);
 
-private:
+protected:
     void initChilds();
 
     static bool isPowerOfTwo(ulong x);
@@ -216,6 +212,19 @@ private:
     Chunk* inflateChunk(unsigned x, unsigned y);
 
     Chunk* inflateChunk(unsigned x, unsigned y, bool rememberChanged);
+
+    /**
+     * Returns the hash-values of N-levels of the SyncTree. For implementation, the method calls itself iteratively.
+     *
+     * One characteristic of the method is that every level of the tree is fully added to the hashMap. Otherwise,
+     * a mapping between tree-node and hash-value can not be created any more.
+     *
+     * @param nextNLevels Number of levels where hash entries are returned.
+     * @param hashValues The hash-map containing the syncTree's hash-values
+     * @return The hash-map containing the syncTree's hash-values
+     */
+    std::map<unsigned, std::vector<size_t>> hashValuesOfNextNLevels(unsigned nextNLevels,
+        std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>());
 
 protected:
     Rectangle area;

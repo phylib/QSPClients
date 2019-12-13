@@ -468,7 +468,8 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                 "When requesting hash-values of the next 3 levels should deliver the non-empty root and 1 empty levels")
             {
 
-                std::map<unsigned, std::vector<size_t>> hashValues = tree.hashValuesOfNextNLevels(3);
+                std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(3, initial_hash);
+                std::map<unsigned, std::vector<size_t>> hashValues = result.first;
                 REQUIRE(hashValues.size() == 3);
 
                 REQUIRE(hashValues[1].at(0) == initial_hash);
@@ -489,7 +490,8 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
             THEN("the hash values of the other quarters should be zero")
             {
 
-                std::map<unsigned, std::vector<size_t>> hashValues = tree.hashValuesOfNextNLevels(4);
+                std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(4, initial_hash);
+                std::map<unsigned, std::vector<size_t>> hashValues = result.first;
                 REQUIRE(hashValues.size() == 4);
 
                 REQUIRE(hashValues[1].size() == 1);
@@ -515,6 +517,11 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                 for (int i = 48; i < 64; i++) {
                     REQUIRE(hashValues[4].at(i) == 0);
                 }
+            }
+
+            THEN("the number of returned changes should be one") {
+                auto result = tree.hashValuesOfNextNLevels(4, initial_hash);
+                REQUIRE(result.second == 1);
             }
         }
     }
