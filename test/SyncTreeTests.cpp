@@ -93,7 +93,8 @@ TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
         REQUIRE_THROWS(SyncTree(rect));
     }
 
-    SECTION("Test the getChunkPath function") {
+    SECTION("Test the getChunkPath function")
+    {
 
         Rectangle rectangle(Point(0, 0), Point(8, 8));
         SyncTree tree(rectangle);
@@ -160,9 +161,7 @@ SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
             }
             THEN("85 nodes have to be inflated") { REQUIRE(tree.countInflatedNodes() == 85); }
 
-            THEN("84 chunks have to be inflated") {
-                REQUIRE(tree.countInflatedChunks() == 64);
-            }
+            THEN("84 chunks have to be inflated") { REQUIRE(tree.countInflatedChunks() == 64); }
         }
 
         WHEN("A single chunk storedChanges twice")
@@ -176,6 +175,24 @@ SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
         WHEN("nothing changed")
         {
             THEN("None of the subtree hashes should be 0") { REQUIRE(tree.getHash() != 0); }
+        }
+
+        WHEN("Chunk 0,0 and 2,2 changes")
+        {
+            tree.change(0, 0);
+            tree.change(2, 2);
+
+            THEN("In level 1, only one child should be inflated")
+            {
+                std::map<unsigned int, unsigned int> changedSubtrees = tree.countInflatedSubtreesPerLevel();
+                REQUIRE(changedSubtrees[1] == 1);
+            }
+
+            THEN("In level 2, two childs should be inflated")
+            {
+                std::map<unsigned int, unsigned int> changedSubtrees = tree.countInflatedSubtreesPerLevel();
+                REQUIRE(changedSubtrees[2] == 2);
+            }
         }
     }
 
@@ -408,24 +425,24 @@ SCENARIO("Test hash functions of the sync tree")
             }
         }
 
-//        WHEN("every single chunk in the tree changes")
-//        {
-//
-//            // Todo: Disable this test case
-//
-//            for (unsigned i = 0; i < treeDimension; i++) {
-//                for (unsigned j = 0; j < treeDimension; j++) {
-//                    tree.change(i, j);
-//                }
-//            }
-//            tree.reHash();
-//
-//            THEN("The number of changed chunks should be 65536x65536")
-//            {
-//                const std::pair<bool, std::vector<Chunk*>>& changes = tree.getChanges(initial_hash);
-//                REQUIRE(changes.first);
-//                REQUIRE(changes.second.size() == treeDimension * treeDimension);
-//            }
-//        }
+        //        WHEN("every single chunk in the tree changes")
+        //        {
+        //
+        //            // Todo: Disable this test case
+        //
+        //            for (unsigned i = 0; i < treeDimension; i++) {
+        //                for (unsigned j = 0; j < treeDimension; j++) {
+        //                    tree.change(i, j);
+        //                }
+        //            }
+        //            tree.reHash();
+        //
+        //            THEN("The number of changed chunks should be 65536x65536")
+        //            {
+        //                const std::pair<bool, std::vector<Chunk*>>& changes = tree.getChanges(initial_hash);
+        //                REQUIRE(changes.first);
+        //                REQUIRE(changes.second.size() == treeDimension * treeDimension);
+        //            }
+        //        }
     }
 }

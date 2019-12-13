@@ -44,6 +44,32 @@ unsigned SyncTree::countInflatedChunks()
     return numInflatedChunks;
 }
 
+std::map<unsigned, unsigned> SyncTree::countInflatedSubtreesPerLevel()
+{
+    std::map<unsigned, unsigned> inflatedSubtreesPerLevel;
+
+    unsigned subtrees = 0;
+    for (SyncTree* child : childs) {
+        if (child != nullptr) {
+            subtrees++;
+
+            std::map<unsigned, unsigned> tmp = child->countInflatedSubtreesPerLevel();
+            for (auto const& elem : tmp) {
+
+                if (inflatedSubtreesPerLevel.find(elem.first) == inflatedSubtreesPerLevel.end()) {
+                    inflatedSubtreesPerLevel[elem.first] = elem.second;
+                } else {
+                    inflatedSubtreesPerLevel[elem.first] += elem.second;
+                }
+
+            }
+        }
+    }
+    inflatedSubtreesPerLevel[getLevel()] = subtrees;
+
+    return inflatedSubtreesPerLevel;
+}
+
 void SyncTree::initChilds()
 {
     if (!finalLevel()) {

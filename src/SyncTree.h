@@ -1,7 +1,5 @@
 #include <utility>
 
-#include <utility>
-
 //
 // Created by phmoll on 11/15/19.
 //
@@ -13,6 +11,7 @@
 
 #include <boost/functional/hash.hpp>
 #include <vector>
+#include <map>
 
 namespace quadtree {
 
@@ -83,6 +82,8 @@ public:
      * @return Number of inclated chunks
      */
     unsigned countInflatedChunks();
+
+    std::map<unsigned, unsigned> countInflatedSubtreesPerLevel();
 
     /**
      * Returns the area covered by the tree

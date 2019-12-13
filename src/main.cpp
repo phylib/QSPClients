@@ -94,10 +94,13 @@ void simulateQuadTreeSync(unsigned treeSize, const ChangeRecord& changeRecord)
         }
         size_t old_hash = tree.getHash();
         tree.reHash();
-        std::cout << item.first << "\t" << changes << "\t" << tree.getChanges(old_hash).second.size() << "\t"
-                  << tree.countInflatedChunks() << "\t" << tree.countInflatedNodes()
+//        std::cout << item.first << "\t" << changes << "\t" << tree.getChanges(old_hash).second.size() << "\t"
+//                  << tree.countInflatedChunks() << "\t" << tree.countInflatedNodes() << std::endl;
+    }
 
-                  << std::endl;
+    auto inflatedTreesPerLevel = tree.countInflatedSubtreesPerLevel();
+    for (const auto& level : inflatedTreesPerLevel) {
+        std::cout << level.first << '\t' << level.second << std::endl;
     }
 }
 
@@ -140,8 +143,8 @@ int main(int argc, char* argv[])
     ChangeRecord record = readChangesOverTime(fname);
     int xShiftValue = std::min(record.minX, (int)treeSize / 2);
     int yShiftValue = std::min(record.minY, (int)treeSize / 2);
-    int xMultiplayerShift = record.maxX - record.minX;
-    int yMultiplayerShift = record.maxY - record.minY;
+    int traceXWidth = record.maxX - record.minX;
+    int traceYWidth = record.maxY - record.minY;
 
     for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
         for (quadtree::Chunk& chunk : item.second) {
@@ -155,9 +158,13 @@ int main(int argc, char* argv[])
             std::vector<quadtree::Chunk> duplicated;
 
             for (quadtree::Chunk& chunk : item.second) {
-                duplicated.insert(duplicated.end(), quadtree::Chunk(quadtree::Point(chunk.pos.x + (i * xMultiplayerShift), chunk.pos.y), 0));
-                duplicated.insert(duplicated.end(), quadtree::Chunk(quadtree::Point(chunk.pos.x + (i * xMultiplayerShift), chunk.pos.y + (i * yMultiplayerShift)), 0));
-                duplicated.insert(duplicated.end(), quadtree::Chunk(quadtree::Point(chunk.pos.x, chunk.pos.y + (i * yMultiplayerShift)), 0));
+                duplicated.insert(duplicated.end(),
+                    quadtree::Chunk(quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y), 0));
+                duplicated.insert(duplicated.end(),
+                    quadtree::Chunk(
+                        quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y + (i * traceYWidth)), 0));
+                duplicated.insert(duplicated.end(),
+                    quadtree::Chunk(quadtree::Point(chunk.pos.x, chunk.pos.y + (i * traceYWidth)), 0));
             }
 
             item.second.insert(item.second.end(), duplicated.begin(), duplicated.end());
