@@ -409,5 +409,27 @@ std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNe
         return std::pair<std::map<unsigned, std::vector<size_t>>, int>(hashValues, changes.first ? changes.second.size() : -1);
     }
 }
+std::vector<SyncTree*> SyncTree::enumerateLowerLevel(unsigned n) {
+    if (n == 1) {
+        return childs;
+    } else if (n > 1) {
+        std::vector<SyncTree*> childs;
+        for (const auto& child : this->childs) {
+
+            if (child != nullptr) {
+                std::vector<SyncTree*> lowerChilds = child->enumerateLowerLevel(n - 1);
+                childs.insert(childs.end(), lowerChilds.begin(), lowerChilds.end());
+            } else {
+
+                for (int i = 0; i < pow(4, n - 1); i++) {
+                    childs.push_back(nullptr);
+                }
+
+            }
+        }
+        return childs;
+    }
+    return std::vector<SyncTree*>();
+}
 
 }

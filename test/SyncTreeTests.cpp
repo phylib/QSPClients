@@ -480,6 +480,15 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                     REQUIRE(hashValues[3].at(i) == 0);
                 }
             }
+
+            THEN("when enumerating 3 lower levels, 64 nullpointers shall be found") {
+                int numNullptrs = 0;
+                for (const auto subtree : tree.enumerateLowerLevel(3)) {
+                    REQUIRE(subtree == nullptr);
+                    numNullptrs++;
+                }
+                REQUIRE(numNullptrs == 64);
+            }
         }
 
         WHEN("a change in the third quarter is performed")
@@ -522,6 +531,20 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
             THEN("the number of returned changes should be one") {
                 auto result = tree.hashValuesOfNextNLevels(4, initial_hash);
                 REQUIRE(result.second == 1);
+            }
+
+            THEN("when enumerating 3 lower levels, one node has to be initialized, the other 63 are nullptrs") {
+                int numNullptrs = 0;
+                int numInit = 0;
+                for (const auto subtree : tree.enumerateLowerLevel(3)) {
+                    if (subtree == nullptr) {
+                        numNullptrs++;
+                    } else {
+                        numInit++;
+                    }
+                }
+                REQUIRE(numNullptrs == 63);
+                REQUIRE(numInit == 1);
             }
         }
     }

@@ -200,6 +200,13 @@ public:
      */
     std::pair<std::map<unsigned, std::vector<size_t>>, int> hashValuesOfNextNLevels(unsigned nextNLevels, size_t since);
 
+    /**
+     * Enumerate the tree level which lies N levels under the current node
+     * @param n Specifies how many levels under the current node shall be traversed
+     * @return Vector with pointers to tree nodes
+     */
+    std::vector<SyncTree*> enumerateLowerLevel(unsigned n);
+
 protected:
     void initChilds();
 
