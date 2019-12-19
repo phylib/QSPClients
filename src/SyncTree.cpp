@@ -325,8 +325,8 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
     return pathComponents;
 }
 
-std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(unsigned nextNLevels,
-    std::map<unsigned, std::vector<size_t>> hashValues)
+std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(
+    unsigned nextNLevels, std::map<unsigned, std::vector<size_t>> hashValues)
 {
     if (nextNLevels <= 0) {
         return hashValues;
@@ -354,7 +354,6 @@ std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(unsign
                         for (int j = 0; j < pow(4, i - 2); j++) {
                             hashValues[getLevel() + i - 1].push_back(0);
                         }
-
                     }
 
                 } else {
@@ -366,14 +365,15 @@ std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(unsign
     }
 }
 
-std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNextNLevels(unsigned nextNLevels,
-    size_t since)
+std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNextNLevels(
+    unsigned nextNLevels, size_t since)
 {
     auto changes = getChanges(since);
 
     std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>();
     if (nextNLevels <= 0) {
-        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(hashValues, changes.first ? changes.second.size() : -1);
+        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(
+            hashValues, changes.first ? changes.second.size() : -1);
     } else {
         if (hashValues.find(getLevel()) == hashValues.end()) {
             hashValues[getLevel()] = std::vector<size_t>();
@@ -398,7 +398,6 @@ std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNe
                         for (int j = 0; j < pow(4, i - 2); j++) {
                             hashValues[getLevel() + i - 1].push_back(0);
                         }
-
                     }
 
                 } else {
@@ -406,10 +405,12 @@ std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNe
                 }
             }
         }
-        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(hashValues, changes.first ? changes.second.size() : -1);
+        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(
+            hashValues, changes.first ? changes.second.size() : -1);
     }
 }
-std::vector<SyncTree*> SyncTree::enumerateLowerLevel(unsigned n) {
+std::vector<SyncTree*> SyncTree::enumerateLowerLevel(unsigned n)
+{
     if (n == 1) {
         return childs;
     } else if (n > 1) {
@@ -424,12 +425,55 @@ std::vector<SyncTree*> SyncTree::enumerateLowerLevel(unsigned n) {
                 for (int i = 0; i < pow(4, n - 1); i++) {
                     childs.push_back(nullptr);
                 }
-
             }
         }
         return childs;
     }
     return std::vector<SyncTree*>();
+}
+SyncTree* SyncTree::inflateSubtree(unsigned int level, int subtreeIndex)
+{
+    unsigned lowerLevels = level - this->getLevel();
+    SyncTree* currentTree = this;
+
+    for (int i = 1; i <= lowerLevels; i++) {
+        int indexToInflate = (subtreeIndex / (int)pow(4, lowerLevels - (i))) % 4;
+        if (currentTree->childs.at(indexToInflate) == nullptr) {
+
+            unsigned xHalf
+                = currentTree->area.topleft.x + ((currentTree->area.bottomRight.x - currentTree->area.topleft.x) / 2);
+            unsigned yHalf
+                = currentTree->area.topleft.y + ((currentTree->area.bottomRight.y - currentTree->area.topleft.y) / 2);
+
+            bool firstXHalf = true, firstYHalf = true;
+
+            if (indexToInflate == 0) { // topleft
+                firstXHalf = true;
+                firstYHalf = true;
+            } else if (indexToInflate == 1) { // topright
+                firstXHalf = false;
+                firstYHalf = true;
+            } else if (indexToInflate == 2) {
+                firstXHalf = true;
+                firstYHalf = false;
+            } else {
+                firstXHalf = false;
+                firstYHalf = false;
+            }
+
+            Point p1(
+                firstXHalf ? currentTree->area.topleft.x : xHalf, firstYHalf ? currentTree->area.topleft.y : yHalf);
+            Point p2(p1.x + (currentTree->area.bottomRight.x - currentTree->area.topleft.x) / 2,
+                p1.y + (currentTree->area.bottomRight.y - currentTree->area.topleft.y) / 2);
+            SyncTree* child
+                = new SyncTree(Rectangle(p1, p2), currentTree, currentTree->level + 1, currentTree->numChilds);
+
+            currentTree->childs.at(indexToInflate) = child;
+        }
+        currentTree = currentTree->childs.at(indexToInflate);
+    }
+
+    return currentTree;
 }
 
 }

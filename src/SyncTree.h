@@ -207,6 +207,14 @@ public:
      */
     std::vector<SyncTree*> enumerateLowerLevel(unsigned n);
 
+    /**
+     * Inflate a given subtree of the current synctree. This is neccesary, when the current tree is compared to the
+     * hashes of another tree
+     * @param level Defines the level until where the subtree needs to be inflated
+     * @param subtreeIndex Index of the subtree in the given level
+     */
+    SyncTree* inflateSubtree(unsigned int level, int subtreeIndex);
+
 protected:
     void initChilds();
 

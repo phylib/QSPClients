@@ -549,3 +549,95 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
         }
     }
 }
+
+TEST_CASE("Correctly inflate subtrees") {
+    GIVEN("A 64x64 area is covered by an empty SyncTree")
+    {
+        unsigned treeDimension = 64;
+        Rectangle rectangle(Point(0, 0), Point(treeDimension, treeDimension));
+        SyncTree tree(rectangle);
+
+        REQUIRE(tree.countInflatedNodes() == 1);
+        const Rectangle& area = tree.getArea();
+        REQUIRE(area.bottomRight.x - area.topleft.x == treeDimension);
+        REQUIRE(area.bottomRight.y - area.topleft.y == treeDimension);
+        std::size_t initial_hash = tree.getHash();
+
+        WHEN("subtree 1 of level 2 is inflated") {
+            tree.inflateSubtree(2, 1);
+
+            THEN("Subtree 32,0-64,32 should not be null") {
+                Rectangle r2(Point(32, 0), Point(64, 32));
+                REQUIRE(tree.getSubtree(r2) != nullptr);
+            }
+
+        }
+        WHEN("subtree 1 of level 2 is inflated twice") {
+            SyncTree* st1 = tree.inflateSubtree(2, 1);
+            SyncTree* st2 = tree.inflateSubtree(2, 1);
+
+            THEN("Only one inflation should have created a new node") {
+                Rectangle r2(Point(32, 0), Point(64, 32));
+                REQUIRE(tree.getSubtree(r2) != nullptr);
+                REQUIRE(tree.getSubtree(r2) == st1);
+                REQUIRE(tree.getSubtree(r2) == st2);
+            }
+        }
+
+
+
+        WHEN("subtree 10 of level 3 is inflated") {
+            tree.inflateSubtree(3, 10);
+
+            THEN("Subtree 0,32-32,64 should not be null") {
+                Rectangle r2(Point(0, 32), Point(32, 64));
+                REQUIRE(tree.getSubtree(r2) != nullptr);
+            }
+
+            THEN("Subtree 0,48-16,64 should not be null") {
+                Rectangle r2(Point(0, 48), Point(16, 64));
+                REQUIRE(tree.getSubtree(r2) != nullptr);
+            }
+
+        }
+
+
+
+        WHEN("subtree 0,1,2 of level 3 is inflated") {
+            tree.inflateSubtree(3, 0);
+            tree.inflateSubtree(3, 1);
+            tree.inflateSubtree(3, 2);
+
+            THEN("The coordinates of the subtree have to be correct") {
+                const std::vector<SyncTree*>& subtrees = tree.enumerateLowerLevel(2);
+
+                REQUIRE(subtrees.at(0)->getArea().topleft.x == 0);
+                REQUIRE(subtrees.at(0)->getArea().topleft.y == 0);
+                REQUIRE(subtrees.at(0)->getArea().bottomRight.x == 16);
+                REQUIRE(subtrees.at(0)->getArea().bottomRight.y == 16);
+
+                REQUIRE(subtrees.at(1)->getArea().topleft.x == 16);
+                REQUIRE(subtrees.at(1)->getArea().topleft.y == 0);
+                REQUIRE(subtrees.at(1)->getArea().bottomRight.x == 32);
+                REQUIRE(subtrees.at(1)->getArea().bottomRight.y == 16);
+
+                REQUIRE(subtrees.at(2)->getArea().topleft.x == 0);
+                REQUIRE(subtrees.at(2)->getArea().topleft.y == 16);
+                REQUIRE(subtrees.at(2)->getArea().bottomRight.x == 16);
+                REQUIRE(subtrees.at(2)->getArea().bottomRight.y == 32);
+            }
+
+        }
+
+        WHEN("Subtree 10 of level 1 is inflated, and the childs of the returned subtree are inflated") {
+            SyncTree* st = tree.inflateSubtree(3, 10);
+            st->inflateSubtree(4, 0);
+
+            THEN("Subtree 0,48,8,56 should be inflated") {
+                Rectangle r2(Point(0, 48), Point(8, 56));
+                REQUIRE(tree.getSubtree(r2) != nullptr);
+            }
+
+        }
+    }
+}

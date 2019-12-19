@@ -14,6 +14,11 @@ add_executable(SyncTreeEvaluation src/main.cpp
         src/SyncTree.cpp src/SyncTree.h
         src/csv/CSVReader.cpp src/csv/CSVReader.h)
 
+add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
+        src/QuadTreeStructs.h
+        src/SyncTree.cpp src/SyncTree.h
+        src/csv/CSVReader.cpp src/csv/CSVReader.h)
+
 add_executable(QuadTreeTests test/QuadTreeTests.cpp
         src/QuadTree.cpp src/QuadTree.h
         src/datastore/HashStorage.cpp src/datastore/HashStorage.h
