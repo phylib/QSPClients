@@ -15,13 +15,14 @@ struct ChangeRecord {
 
 void writeNumRequestCSVHeader(std::ostream& outfile)
 {
-    outfile << "TickNo\tsubtreeRequests\tchunkRequests\ttotalRequests" << std::endl;
+    outfile << "TickNo\tchangesPerTick\tsubtreeRequests\tchunkRequests\ttotalRequests" << std::endl;
 }
 
-void writeNumRequests(std::ostream& outfile, unsigned tickNo, unsigned subtreeRequests, unsigned chunkRequests)
+void writeNumRequests(
+    std::ostream& outfile, unsigned tickNo, unsigned changesPerTick, unsigned subtreeRequests, unsigned chunkRequests)
 {
-    outfile << tickNo << '\t' << subtreeRequests << '\t' << chunkRequests << '\t' << (subtreeRequests + chunkRequests)
-            << std::endl;
+    outfile << tickNo << '\t' << changesPerTick << '\t' << subtreeRequests << '\t' << chunkRequests << '\t'
+            << (subtreeRequests + chunkRequests) << std::endl;
 }
 
 ChangeRecord readChangesOverTime(const std::string& fname)
@@ -150,7 +151,7 @@ void simulateQuadTreeSync(
         }
         clonedTree.reHash();
 
-        writeNumRequests(outfile, item.first, lowerSubtreeRequests, chunkRequests);
+        writeNumRequests(outfile, item.first, changes, lowerSubtreeRequests, chunkRequests);
     }
     outfile.close();
 }
@@ -166,45 +167,57 @@ int main(int argc, char* argv[])
     std::string fname = "/home/phmoll/Coding/Minecraft/GameStateChanges/chunkChanges.csv";
     unsigned treeSize = atoi(argv[1]);
     std::string outputFolder = argv[2];
-    unsigned duplicate = 1;
 
-    // Shift all positions to the center of the Sync Tree
-    ChangeRecord record = readChangesOverTime(fname);
-    int xShiftValue = std::min(record.minX, (int)treeSize / 2);
-    int yShiftValue = std::min(record.minY, (int)treeSize / 2);
-    int traceXWidth = record.maxX - record.minX;
-    int traceYWidth = record.maxY - record.minY;
+    unsigned playerDuplication[] = { 0, 1, 2 };
+    unsigned lowerLevels[] = { 1, 2, 3, 4, 5, 6, 7 };
+    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
 
-    for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
-        for (quadtree::Chunk& chunk : item.second) {
-            chunk.pos.x += std::abs(xShiftValue);
-            chunk.pos.y += std::abs(yShiftValue);
-        }
-    }
+    for (unsigned duplicate : playerDuplication) {
+        for (unsigned lowerLevel : lowerLevels) {
+            for (unsigned chunkThreshold : chunkThresholds) {
 
-    for (unsigned i = 1; i <= duplicate; i++) {
-        for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
-            std::vector<quadtree::Chunk> duplicated;
+                // Shift all positions to the center of the Sync Tree
+                ChangeRecord record = readChangesOverTime(fname);
+                int xShiftValue = std::min(record.minX, (int)treeSize / 2);
+                int yShiftValue = std::min(record.minY, (int)treeSize / 2);
+                int traceXWidth = record.maxX - record.minX;
+                int traceYWidth = record.maxY - record.minY;
 
-            for (quadtree::Chunk& chunk : item.second) {
-                duplicated.insert(duplicated.end(),
-                    quadtree::Chunk(quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y), 0));
-                duplicated.insert(duplicated.end(),
-                    quadtree::Chunk(
-                        quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y + (i * traceYWidth)), 0));
-                duplicated.insert(duplicated.end(),
-                    quadtree::Chunk(quadtree::Point(chunk.pos.x, chunk.pos.y + (i * traceYWidth)), 0));
+                for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
+                    for (quadtree::Chunk& chunk : item.second) {
+                        chunk.pos.x += std::abs(xShiftValue);
+                        chunk.pos.y += std::abs(yShiftValue);
+                    }
+                }
+
+                for (unsigned i = 1; i <= duplicate; i++) {
+                    for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
+                        std::vector<quadtree::Chunk> duplicated;
+
+                        for (quadtree::Chunk& chunk : item.second) {
+                            duplicated.insert(duplicated.end(),
+                                quadtree::Chunk(quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y), 0));
+                            duplicated.insert(duplicated.end(),
+                                quadtree::Chunk(
+                                    quadtree::Point(chunk.pos.x + (i * traceXWidth), chunk.pos.y + (i * traceYWidth)),
+                                    0));
+                            duplicated.insert(duplicated.end(),
+                                quadtree::Chunk(quadtree::Point(chunk.pos.x, chunk.pos.y + (i * traceYWidth)), 0));
+                        }
+
+                        item.second.insert(item.second.end(), duplicated.begin(), duplicated.end());
+                    }
+                }
+
+                std::cout << "Start evaluation (player duplication " << duplicate << ", lowerLevels " << lowerLevel
+                          << ", chunkThreshold " << chunkThreshold << ")" << std::endl;
+                std::string outFileName = outputFolder + "network_requests_player_" + std::to_string(duplicate)
+                    + "_lowerLevel_" + std::to_string(lowerLevel) + "_chunkThreshold_" + std::to_string(chunkThreshold)
+                    + ".csv";
+                simulateQuadTreeSync(treeSize, record, lowerLevel + 1, chunkThreshold, outFileName);
             }
-
-            item.second.insert(item.second.end(), duplicated.begin(), duplicated.end());
         }
     }
-
-    unsigned lowerLevels = 3;
-    unsigned chunkThreshold = 100;
-    std::string outFileName = outputFolder + "network_requests_player_" + std::to_string(duplicate) + "_lowerLevel_"
-        + std::to_string(lowerLevels) + "_chunkThreshold_" + std::to_string(chunkThreshold) + ".csv";
-    simulateQuadTreeSync(treeSize, record, lowerLevels, chunkThreshold, outFileName);
 
     return 0;
 }
