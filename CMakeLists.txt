@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(QuadTreeSyncEvaluation)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable" )
 
 find_package(Catch2 REQUIRED)
 

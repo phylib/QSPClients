@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    for (int i = 1; i <= duplicate; i++) {
+    for (unsigned i = 1; i <= duplicate; i++) {
         for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
             std::vector<quadtree::Chunk> duplicated;
 

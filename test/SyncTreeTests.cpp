@@ -154,8 +154,8 @@ SCENARIO("An area can be covered by a SyncTree and storedChanges can be made")
         WHEN("When all chunks of the tree are inflated")
         {
             // Inflate all subtrees
-            for (int i = 0; i < treeDimension; i++) {
-                for (int j = 0; j < treeDimension; j++) {
+            for (unsigned i = 0; i < treeDimension; i++) {
+                for (unsigned j = 0; j < treeDimension; j++) {
                     tree.change(i, j);
                 }
             }

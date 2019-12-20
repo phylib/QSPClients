@@ -13,10 +13,15 @@ struct ChangeRecord {
     int maxY = INT_MIN;
 };
 
-std::string printCSVHeader()
+void writeNumRequestCSVHeader(std::ostream& outfile)
 {
-    std::string header = "TickNo\tchangedChunks\trequiredChunksDelivery\trequiredChunksDeliveryNoHist\tinflatedNodes";
-    return header;
+    outfile << "TickNo\tsubtreeRequests\tchunkRequests\ttotalRequests" << std::endl;
+}
+
+void writeNumRequests(std::ostream& outfile, unsigned tickNo, unsigned subtreeRequests, unsigned chunkRequests)
+{
+    outfile << tickNo << '\t' << subtreeRequests << '\t' << chunkRequests << '\t' << (subtreeRequests + chunkRequests)
+            << std::endl;
 }
 
 ChangeRecord readChangesOverTime(const std::string& fname)
@@ -73,10 +78,12 @@ ChangeRecord readChangesOverTime(const std::string& fname)
     return record;
 }
 
-void simulateQuadTreeSync(unsigned treeSize, const ChangeRecord& changeRecord, int numLevels, int chunkRequestThreshold)
+void simulateQuadTreeSync(
+    unsigned treeSize, const ChangeRecord& changeRecord, int numLevels, int chunkRequestThreshold, std::string fname)
 {
-
-    std::cout << printCSVHeader() << std::endl;
+    std::ofstream outfile;
+    outfile.open(fname, std::ios::out | std::ios::trunc);
+    writeNumRequestCSVHeader(outfile);
 
     // Create a sync originalTree
     const quadtree::Rectangle& rectangle
@@ -108,7 +115,9 @@ void simulateQuadTreeSync(unsigned treeSize, const ChangeRecord& changeRecord, i
             treesToCompare.erase(treesToCompare.begin());
 
             if (originalTree.getSubtree(currentSubTree->getArea()) == nullptr) {
-                std::cout << currentSubTree->getArea().topleft.x << "," << currentSubTree->getArea().topleft.y << " " << currentSubTree->getArea().bottomRight.x << "," << currentSubTree->getArea().bottomRight.y  << std::endl;
+                std::cout << currentSubTree->getArea().topleft.x << "," << currentSubTree->getArea().topleft.y << " "
+                          << currentSubTree->getArea().bottomRight.x << "," << currentSubTree->getArea().bottomRight.y
+                          << std::endl;
             }
             auto hashValuesResponse
                 = originalTree.getSubtree(currentSubTree->getArea())
@@ -120,67 +129,44 @@ void simulateQuadTreeSync(unsigned treeSize, const ChangeRecord& changeRecord, i
                 unsigned lowestLevel = hashValuesResponse.first.rbegin()->first;
                 auto hashValues = hashValuesResponse.first[lowestLevel];
                 auto treeNodes = currentSubTree->enumerateLowerLevel(lowestLevel - currentSubTree->getLevel());
-                for (int i = 0; i < hashValues.size(); i++) {
+                for (unsigned i = 0; i < hashValues.size(); i++) {
 
-                    if ((treeNodes.at(i) == nullptr && hashValues.at(i) != 0) || (treeNodes.at(i) != nullptr && hashValues.at(i) != treeNodes.at(i)->getHash())) {
+                    if ((treeNodes.at(i) == nullptr && hashValues.at(i) != 0)
+                        || (treeNodes.at(i) != nullptr && hashValues.at(i) != treeNodes.at(i)->getHash())) {
                         if (treeNodes.at(i) == nullptr) {
                             treeNodes.at(i) = currentSubTree->inflateSubtree(lowestLevel, i);
                         }
-
                         treesToCompare.push_back(treeNodes.at(i));
                     }
                 }
 
             } else {
-                for (const auto& change : originalTree.getSubtree(currentSubTree->getArea())->getChanges(currentSubTree->getHash()).second) {
+                chunkRequests++;
+                for (const auto& change :
+                    originalTree.getSubtree(currentSubTree->getArea())->getChanges(currentSubTree->getHash()).second) {
                     clonedTree.change(change->pos.x, change->pos.y, change->data);
                 }
             }
         }
         clonedTree.reHash();
 
-        std::cout << (clonedTree.getHash() == originalTree.getHash()) << "," << lowerSubtreeRequests << std::endl;
-
-        //        std::vector<quadtree::SyncTree*> treesToCompare;
-        //        treesToCompare.push_back(&clonedTree);
-        //        while (!treesToCompare.empty()) {
-        //
-        //            quadtree::SyncTree* current = treesToCompare.at(0);
-        //            treesToCompare.erase(treesToCompare.begin());
-        //
-        //            auto hashValuesResponse =
-        //            originalTree.getSubtree(current->getArea())->hashValuesOfNextNLevels(numLevels,
-        //            current->getHash()); // This is the request lowerSubtreeRequests++;
-        //
-        //            if (hashValuesResponse.second > chunkRequestThreshold) {
-        //                // Request changed subtrees
-        //                if (current->getHash() != hashValuesResponse.first[current->getLevel()].at(0)) { // todo:
-        //                position instead of 0
-        //
-        //                }
-        //            } else {
-        //                // Request the changes
-        //                auto changes = originalTree.getSubtree(current->getArea())->getChanges(current->getHash());
-        //                lowerSubtreeRequests++;
-        //                for (const auto& changedChunk : changes.second) {
-        //                    clonedTree.change(changedChunk->pos.x, changedChunk.pos.y, changedChunk->data);
-        //                }
-        //            }
-        //        }
+        writeNumRequests(outfile, item.first, lowerSubtreeRequests, chunkRequests);
     }
+    outfile.close();
 }
 
 int main(int argc, char* argv[])
 {
 
     if (argc != 3) {
-        std::cout << "Usage: " << argv[0] << " [treeSize] [duplicate]" << std::endl;
+        std::cout << "Usage: " << argv[0] << " [treeSize] [outputFolder]" << std::endl;
         exit(-1);
     }
 
     std::string fname = "/home/phmoll/Coding/Minecraft/GameStateChanges/chunkChanges.csv";
     unsigned treeSize = atoi(argv[1]);
-    unsigned duplicate = atoi(argv[2]);
+    std::string outputFolder = argv[2];
+    unsigned duplicate = 1;
 
     // Shift all positions to the center of the Sync Tree
     ChangeRecord record = readChangesOverTime(fname);
@@ -196,7 +182,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    for (int i = 1; i <= duplicate; i++) {
+    for (unsigned i = 1; i <= duplicate; i++) {
         for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
             std::vector<quadtree::Chunk> duplicated;
 
@@ -214,7 +200,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    simulateQuadTreeSync(treeSize, record, 3, 100);
+    unsigned lowerLevels = 3;
+    unsigned chunkThreshold = 100;
+    std::string outFileName = outputFolder + "network_requests_player_" + std::to_string(duplicate) + "_lowerLevel_"
+        + std::to_string(lowerLevels) + "_chunkThreshold_" + std::to_string(chunkThreshold) + ".csv";
+    simulateQuadTreeSync(treeSize, record, lowerLevels, chunkThreshold, outFileName);
 
     return 0;
 }

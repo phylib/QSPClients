@@ -219,7 +219,7 @@ namespace quadtree {
 
         std::string path = "/";
         int max_exp = (int) log2(quadtreeSize) - 1;
-        for (int i = 0; i < levels; i++) {
+        for (unsigned i = 0; i < levels; i++) {
             path += std::to_string(int(floor(point.x / (double) pow(2, max_exp - i)))) + ","
                     + std::to_string(int(floor(point.y / (double) pow(2, max_exp - i))))
                     + "/";

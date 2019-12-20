@@ -103,7 +103,8 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y) { return inflateChunk(x, y
 
 Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
 {
-    if (x < area.topleft.x || x >= area.bottomRight.x || y < area.topleft.y || y >= area.bottomRight.y) {
+    if (x < (unsigned)area.topleft.x || x >= (unsigned)area.bottomRight.x || y < (unsigned)area.topleft.y
+        || y >= (unsigned)area.bottomRight.y) {
         return nullptr;
     }
 
@@ -247,8 +248,8 @@ SyncTree* SyncTree::getSubtree(Rectangle rectangle)
         return this;
     }
 
-    unsigned xHalf = area.topleft.x + ((area.bottomRight.x - area.topleft.x) / 2);
-    unsigned yHalf = area.topleft.y + ((area.bottomRight.y - area.topleft.y) / 2);
+    int xHalf = area.topleft.x + ((area.bottomRight.x - area.topleft.x) / 2);
+    int yHalf = area.topleft.y + ((area.bottomRight.y - area.topleft.y) / 2);
     unsigned index;
     Point topLeft = rectangle.topleft;
     if (topLeft.x < xHalf && topLeft.y < yHalf) { // topleft
@@ -282,7 +283,8 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
 {
 
     // Check if the given rectangle is part of the tree
-    if (x < area.topleft.x || x >= area.bottomRight.x || y < area.topleft.y || y >= area.bottomRight.y) {
+    if (x < (unsigned)area.topleft.x || x >= (unsigned)area.bottomRight.x || y < (unsigned)area.topleft.y
+        || y >= (unsigned)area.bottomRight.y) {
         throw std::invalid_argument("Requested chunk is not part of the current tree");
     }
 
@@ -347,7 +349,7 @@ std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(
                     // Add the empty hash for the child
                     hashValues[getLevel() + 1].push_back(0);
                     // Add empty levels for all uninitialized levels of the child node
-                    for (int i = 3; i <= nextNLevels; i++) {
+                    for (unsigned i = 3; i <= nextNLevels; i++) {
                         if (hashValues.find(getLevel() + i - 1) == hashValues.end()) {
                             hashValues[getLevel() + i - 1] = std::vector<size_t>();
                         }
@@ -391,11 +393,11 @@ std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNe
                     // Add the empty hash for the child
                     hashValues[getLevel() + 1].push_back(0);
                     // Add empty levels for all uninitialized levels of the child node
-                    for (int i = 3; i <= nextNLevels; i++) {
+                    for (unsigned i = 3; i <= nextNLevels; i++) {
                         if (hashValues.find(getLevel() + i - 1) == hashValues.end()) {
                             hashValues[getLevel() + i - 1] = std::vector<size_t>();
                         }
-                        for (int j = 0; j < pow(4, i - 2); j++) {
+                        for (unsigned j = 0; j < pow(4, i - 2); j++) {
                             hashValues[getLevel() + i - 1].push_back(0);
                         }
                     }
@@ -436,7 +438,7 @@ SyncTree* SyncTree::inflateSubtree(unsigned int level, int subtreeIndex)
     unsigned lowerLevels = level - this->getLevel();
     SyncTree* currentTree = this;
 
-    for (int i = 1; i <= lowerLevels; i++) {
+    for (unsigned i = 1; i <= lowerLevels; i++) {
         int indexToInflate = (subtreeIndex / (int)pow(4, lowerLevels - (i))) % 4;
         if (currentTree->childs.at(indexToInflate) == nullptr) {
 
