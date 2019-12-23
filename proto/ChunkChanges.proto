@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package quadtreesync;
+
+// Generation:  protoc --proto_path=proto/ --cpp_out src/proto/ proto/LowerLevelHashes.proto
+
+message ChunkChanges {
+    required bool hashKnown = 1;
+    repeated Chunk chunks = 2;
+}
+
+message Chunk {
+    required uint64 x = 1;
+    required uint64 y = 2;
+    required uint64 data = 3;
+}

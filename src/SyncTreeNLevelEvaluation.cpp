@@ -1,9 +1,13 @@
 #include "QuadTreeStructs.h"
 #include "SyncTree.h"
 #include "csv/CSVReader.h"
+#include "proto/ChunkChanges.pb.h"
+#include "proto/LowerLevelHashes.pb.h"
+#include "zip/GZip.h"
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <numeric>
 
 struct ChangeRecord {
     std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesPerTick;
@@ -15,14 +19,23 @@ struct ChangeRecord {
 
 void writeNumRequestCSVHeader(std::ostream& outfile)
 {
-    outfile << "TickNo\tchangesPerTick\tsubtreeRequests\tchunkRequests\ttotalRequests" << std::endl;
+    outfile << "TickNo\tchangesPerTick\tsubtreeRequests\tchunkRequests\ttotalRequests\tsubTreeRequestSizesMin\tsubTreeR"
+               "equestSizesMax\tsubTreeRequestSizesMean\tchunkRequestSizesMin\tchunkRequestSizesMax\tchunkRequestSizesMean"
+            << std::endl;
 }
 
-void writeNumRequests(
-    std::ostream& outfile, unsigned tickNo, unsigned changesPerTick, unsigned subtreeRequests, unsigned chunkRequests)
+void writeNumRequests(std::ostream& outfile, unsigned tickNo, unsigned changesPerTick, unsigned subtreeRequests,
+    unsigned chunkRequests, std::vector<unsigned> subtreeRequestSizes, std::vector<unsigned> chunkRequestSizes)
 {
     outfile << tickNo << '\t' << changesPerTick << '\t' << subtreeRequests << '\t' << chunkRequests << '\t'
-            << (subtreeRequests + chunkRequests) << std::endl;
+            << (subtreeRequests + chunkRequests) << '\t'
+            << *min_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end()) << '\t'
+            << *max_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end()) << '\t'
+            << std::accumulate(subtreeRequestSizes.begin(), subtreeRequestSizes.end(), 0.0) / subtreeRequestSizes.size() << '\t'
+            << *min_element(chunkRequestSizes.begin(), chunkRequestSizes.end()) << '\t'
+            << *max_element(chunkRequestSizes.begin(), chunkRequestSizes.end()) << '\t'
+            << std::accumulate(chunkRequestSizes.begin(), chunkRequestSizes.end(), 0.0) / chunkRequestSizes.size()
+            << std::endl;
 }
 
 ChangeRecord readChangesOverTime(const std::string& fname)
@@ -79,6 +92,41 @@ ChangeRecord readChangesOverTime(const std::string& fname)
     return record;
 }
 
+unsigned getLowerSubtreeResponseSize(std::pair<std::map<unsigned, std::vector<size_t>>, int> changeResponse)
+{
+
+    unsigned lowestLevel = changeResponse.first.rbegin()->first;
+
+    quadtreesync::LowerLevelHashes lowerSubtreeResponse;
+    lowerSubtreeResponse.set_treelevel(lowestLevel);
+    lowerSubtreeResponse.set_numchanges(changeResponse.second);
+    for (size_t hashValue : changeResponse.first[lowestLevel]) {
+        lowerSubtreeResponse.mutable_hashvalues()->add_hashvalues(hashValue);
+    }
+    std::string encoded = lowerSubtreeResponse.SerializeAsString();
+    std::string zipped = GZip::compress(encoded);
+    // std::cout << lowerSubtreeResponse.ByteSize() << '-' << zipped.length() << std::endl;
+
+    return zipped.length();
+}
+
+unsigned getChunkRequestResponseSize(std::pair<bool, std::vector<quadtree::Chunk*>> chunkRequestResponse)
+{
+
+    quadtreesync::ChunkChanges chunkChanges;
+    chunkChanges.set_hashknown(chunkRequestResponse.first);
+    for (const quadtree::Chunk* chunk : chunkRequestResponse.second) {
+
+        quadtreesync::Chunk protoChunk;
+        protoChunk.set_data(chunk->data);
+        protoChunk.set_x(chunk->pos.x);
+        protoChunk.set_y(chunk->pos.y);
+        chunkChanges.mutable_chunks()->Add()->CopyFrom(protoChunk);
+    }
+    std::string zipped = GZip::compress(chunkChanges.SerializeAsString());
+    return zipped.length();
+}
+
 void simulateQuadTreeSync(
     unsigned treeSize, const ChangeRecord& changeRecord, int numLevels, int chunkRequestThreshold, std::string fname)
 {
@@ -108,6 +156,8 @@ void simulateQuadTreeSync(
         // Request the changes from the original tree
         int lowerSubtreeRequests = 0;
         int chunkRequests = 0;
+        std::vector<unsigned> lowerSubtreeRequestSizes;
+        std::vector<unsigned> chunkRequestSizes;
         std::vector<quadtree::SyncTree*> treesToCompare;
         treesToCompare.push_back(&clonedTree);
         while (!treesToCompare.empty()) {
@@ -115,15 +165,11 @@ void simulateQuadTreeSync(
             quadtree::SyncTree* currentSubTree = treesToCompare.front();
             treesToCompare.erase(treesToCompare.begin());
 
-            if (originalTree.getSubtree(currentSubTree->getArea()) == nullptr) {
-                std::cout << currentSubTree->getArea().topleft.x << "," << currentSubTree->getArea().topleft.y << " "
-                          << currentSubTree->getArea().bottomRight.x << "," << currentSubTree->getArea().bottomRight.y
-                          << std::endl;
-            }
             auto hashValuesResponse
                 = originalTree.getSubtree(currentSubTree->getArea())
                       ->hashValuesOfNextNLevels(numLevels, currentSubTree->getHash()); // This is the request
             lowerSubtreeRequests++;
+            lowerSubtreeRequestSizes.push_back(getLowerSubtreeResponseSize(hashValuesResponse));
 
             if (hashValuesResponse.second > chunkRequestThreshold) {
 
@@ -143,15 +189,18 @@ void simulateQuadTreeSync(
 
             } else {
                 chunkRequests++;
-                for (const auto& change :
-                    originalTree.getSubtree(currentSubTree->getArea())->getChanges(currentSubTree->getHash()).second) {
+                const std::pair<bool, std::vector<quadtree::Chunk*>>& chunkRequest
+                    = originalTree.getSubtree(currentSubTree->getArea())->getChanges(currentSubTree->getHash());
+                chunkRequestSizes.push_back(getChunkRequestResponseSize(chunkRequest));
+                for (const auto& change : chunkRequest.second) {
                     clonedTree.change(change->pos.x, change->pos.y, change->data);
                 }
             }
         }
         clonedTree.reHash();
 
-        writeNumRequests(outfile, item.first, changes, lowerSubtreeRequests, chunkRequests);
+        writeNumRequests(outfile, item.first, changes, lowerSubtreeRequests, chunkRequests, lowerSubtreeRequestSizes,
+            chunkRequestSizes);
     }
     outfile.close();
 }
@@ -168,9 +217,12 @@ int main(int argc, char* argv[])
     unsigned treeSize = atoi(argv[1]);
     std::string outputFolder = argv[2];
 
-    unsigned playerDuplication[] = { 0, 1, 2 };
-    unsigned lowerLevels[] = { 1, 2, 3, 4, 5, 6, 7 };
-    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
+    //    unsigned playerDuplication[] = { 0, 1, 2 };
+    //    unsigned lowerLevels[] = { 1, 2, 3, 4, 5, 6, 7 };
+    //    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
+    unsigned playerDuplication[] = { 1 };
+    unsigned lowerLevels[] = { 3 };
+    unsigned chunkThresholds[] = { 100 };
 
     for (unsigned duplicate : playerDuplication) {
         for (unsigned lowerLevel : lowerLevels) {

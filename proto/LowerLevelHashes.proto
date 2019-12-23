@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package quadtreesync;
+
+// Generation: protoc --proto_path=proto/ --cpp_out src/proto/ proto/LowerLevelHashes.proto
+
+
+message LowerLevelHashes {
+
+    required uint64 numChanges = 1;
+    required uint64 treeLevel = 2;
+    required HashValueList hashValues = 3;
+
+}
+
+message HashValueList {
+    repeated uint64 hashValues = 3;
+}
