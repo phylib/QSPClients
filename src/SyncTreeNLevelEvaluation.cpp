@@ -217,12 +217,12 @@ int main(int argc, char* argv[])
     unsigned treeSize = atoi(argv[1]);
     std::string outputFolder = argv[2];
 
-    //    unsigned playerDuplication[] = { 0, 1, 2 };
-    //    unsigned lowerLevels[] = { 1, 2, 3, 4, 5, 6, 7 };
-    //    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
-    unsigned playerDuplication[] = { 1 };
-    unsigned lowerLevels[] = { 3 };
-    unsigned chunkThresholds[] = { 100 };
+    unsigned playerDuplication[] = { 0, 1, 2 };
+    unsigned lowerLevels[] = { 1, 2, 3, 4, 5 };
+    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
+//    unsigned playerDuplication[] = { 1 };
+//    unsigned lowerLevels[] = { 3 };
+//    unsigned chunkThresholds[] = { 100 };
 
     for (unsigned duplicate : playerDuplication) {
         for (unsigned lowerLevel : lowerLevels) {
