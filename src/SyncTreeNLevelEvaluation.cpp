@@ -198,6 +198,11 @@ void simulateQuadTreeSync(
             }
         }
         clonedTree.reHash();
+        if (clonedTree.getHash() != originalTree.getHash()) {
+            std::cout << "Invalid evaluation: Hashes do not match at tick " << item.first << "!" << std::endl;
+            std::cout << "Parameters: numLevels: " << numLevels << ";  threshold: " << chunkRequestThreshold << std::endl;
+            exit(-1);
+        }
 
         writeNumRequests(outfile, item.first, changes, lowerSubtreeRequests, chunkRequests, lowerSubtreeRequestSizes,
             chunkRequestSizes);
