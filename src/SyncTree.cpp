@@ -477,5 +477,10 @@ SyncTree* SyncTree::inflateSubtree(unsigned int level, int subtreeIndex)
 
     return currentTree;
 }
+unsigned SyncTree::getMaxLevel() {
+    unsigned width = this->getArea().bottomRight.x - this->getArea().topleft.x;
+    unsigned levels = (unsigned)log2(width);
+    return getLevel() + levels - 1;
+}
 
 }

@@ -71,6 +71,8 @@ public:
      */
     inline bool finalLevel() { return area.bottomRight.x - area.topleft.x <= 2; }
 
+    unsigned getMaxLevel();
+
     /**
      * Traverses the tree and counts the number of inflated nodes (including parent and child chunks)
      *

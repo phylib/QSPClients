@@ -93,6 +93,19 @@ TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
         REQUIRE_THROWS(SyncTree(rect));
     }
 
+    SECTION("Test the max levels calculation") {
+        Rectangle rectangle(Point(0, 0), Point(8, 8));
+        SyncTree tree(rectangle);
+
+        REQUIRE(tree.getMaxLevel() == 3);
+
+        Rectangle largerRectangle(Point(0, 0), Point(16, 16));
+        SyncTree largerTree(largerRectangle);
+        largerTree.change(0,0); // Inflate subtree
+        SyncTree* subtree = largerTree.getSubtree(rectangle);
+        REQUIRE(subtree->getMaxLevel() == 4);
+    }
+
     SECTION("Test the getChunkPath function")
     {
 

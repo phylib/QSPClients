@@ -165,13 +165,16 @@ void simulateQuadTreeSync(
             quadtree::SyncTree* currentSubTree = treesToCompare.front();
             treesToCompare.erase(treesToCompare.begin());
 
+            // Do not request more levels than the tree is high
+            unsigned levelsToRequest = std::min(currentSubTree->getMaxLevel() - currentSubTree->getLevel(), (unsigned) numLevels);
+
             auto hashValuesResponse
                 = originalTree.getSubtree(currentSubTree->getArea())
-                      ->hashValuesOfNextNLevels(numLevels, currentSubTree->getHash()); // This is the request
+                      ->hashValuesOfNextNLevels(levelsToRequest, currentSubTree->getHash()); // This is the request
             lowerSubtreeRequests++;
             lowerSubtreeRequestSizes.push_back(getLowerSubtreeResponseSize(hashValuesResponse));
 
-            if (hashValuesResponse.second > chunkRequestThreshold) {
+            if (hashValuesResponse.second > chunkRequestThreshold && currentSubTree->getLevel() + 1 < currentSubTree->getMaxLevel()) {
 
                 unsigned lowestLevel = hashValuesResponse.first.rbegin()->first;
                 auto hashValues = hashValuesResponse.first[lowestLevel];
