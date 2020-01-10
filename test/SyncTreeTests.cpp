@@ -483,12 +483,12 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
 
                 std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(3, initial_hash);
                 std::map<unsigned, std::vector<size_t>> hashValues = result.first;
-                REQUIRE(hashValues.size() == 3);
+                REQUIRE(hashValues.size() == 1);
 
-                REQUIRE(hashValues[1].at(0) == initial_hash);
+                /*REQUIRE(hashValues[1].at(0) == initial_hash);
                 for (int i = 0; i < 4; i++) {
                     REQUIRE(hashValues[2].at(i) == 0);
-                }
+                }*/
                 for (int i = 0; i < 16; i++) {
                     REQUIRE(hashValues[3].at(i) == 0);
                 }
@@ -514,24 +514,24 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
 
                 std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(4, initial_hash);
                 std::map<unsigned, std::vector<size_t>> hashValues = result.first;
-                REQUIRE(hashValues.size() == 4);
+                REQUIRE(hashValues.size() == 1);
 
-                REQUIRE(hashValues[1].size() == 1);
-                REQUIRE(hashValues[2].size() == 4);
-                REQUIRE(hashValues[3].size() == 16);
+                //REQUIRE(hashValues[1].size() == 1);
+                //REQUIRE(hashValues[2].size() == 4);
+                //REQUIRE(hashValues[3].size() == 16);
                 REQUIRE(hashValues[4].size() == 64);
 
-                REQUIRE(hashValues[2].at(0) == 0);
+                /*REQUIRE(hashValues[2].at(0) == 0);
                 REQUIRE(hashValues[2].at(1) == 0);
                 REQUIRE(hashValues[2].at(2) != 0);
-                REQUIRE(hashValues[2].at(3) == 0);
+                REQUIRE(hashValues[2].at(3) == 0);*/
 
-                for (int i = 0; i < 8; i++) {
+                /*for (int i = 0; i < 8; i++) {
                     REQUIRE(hashValues[3].at(i) == 0);
                 }
                 for (int i = 12; i < 16; i++) {
                     REQUIRE(hashValues[3].at(i) == 0);
-                }
+                }*/
 
                 for (int i = 0; i < 32; i++) {
                     REQUIRE(hashValues[4].at(i) == 0);

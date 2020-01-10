@@ -327,78 +327,48 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
     return pathComponents;
 }
 
-std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(
-    unsigned nextNLevels, std::map<unsigned, std::vector<size_t>> hashValues)
-{
-    if (nextNLevels <= 0) {
-        return hashValues;
-    } else {
-        if (hashValues.find(getLevel()) == hashValues.end()) {
-            hashValues[getLevel()] = std::vector<size_t>();
-        }
-        hashValues[getLevel()].push_back(getHash());
-
-        if (nextNLevels > 1 && !finalLevel()) {
-
-            if (hashValues.find(getLevel() + 1) == hashValues.end()) {
-                hashValues[getLevel() + 1] = std::vector<size_t>();
-            }
-
-            for (auto child : childs) {
-                if (child == nullptr) {
-                    // Add the empty hash for the child
-                    hashValues[getLevel() + 1].push_back(0);
-                    // Add empty levels for all uninitialized levels of the child node
-                    for (unsigned i = 3; i <= nextNLevels; i++) {
-                        if (hashValues.find(getLevel() + i - 1) == hashValues.end()) {
-                            hashValues[getLevel() + i - 1] = std::vector<size_t>();
-                        }
-                        for (int j = 0; j < pow(4, i - 2); j++) {
-                            hashValues[getLevel() + i - 1].push_back(0);
-                        }
-                    }
-
-                } else {
-                    hashValues = child->hashValuesOfNextNLevels(nextNLevels - 1, hashValues);
-                }
-            }
-        }
-        return hashValues;
-    }
-}
-
 std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNextNLevels(
     unsigned nextNLevels, size_t since)
 {
     auto changes = getChanges(since);
 
     std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>();
+    hashValues = hashValuesOfNextNLevels(nextNLevels, hashValues);
+    return std::pair<std::map<unsigned, std::vector<size_t>>, int>(
+        hashValues, changes.first ? changes.second.size() : -1);
+}
+
+std::map<unsigned, std::vector<size_t>> SyncTree::hashValuesOfNextNLevels(
+    unsigned nextNLevels, std::map<unsigned, std::vector<size_t>> hashValues)
+{
     if (nextNLevels <= 0) {
-        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(
-            hashValues, changes.first ? changes.second.size() : -1);
+        return hashValues;
     } else {
-        if (hashValues.find(getLevel()) == hashValues.end()) {
-            hashValues[getLevel()] = std::vector<size_t>();
+        if (nextNLevels == 1) {
+            if (hashValues.find(getLevel()) == hashValues.end()) {
+                hashValues[getLevel()] = std::vector<size_t>();
+            }
+            hashValues[getLevel()].push_back(getHash());
         }
-        hashValues[getLevel()].push_back(getHash());
 
         if (nextNLevels > 1 && !finalLevel()) {
 
-            if (hashValues.find(getLevel() + 1) == hashValues.end()) {
+            if (nextNLevels == 2 && hashValues.find(getLevel() + 1) == hashValues.end()) {
                 hashValues[getLevel() + 1] = std::vector<size_t>();
             }
 
             for (auto child : childs) {
                 if (child == nullptr) {
                     // Add the empty hash for the child
-                    hashValues[getLevel() + 1].push_back(0);
-                    // Add empty levels for all uninitialized levels of the child node
-                    for (unsigned i = 3; i <= nextNLevels; i++) {
-                        if (hashValues.find(getLevel() + i - 1) == hashValues.end()) {
-                            hashValues[getLevel() + i - 1] = std::vector<size_t>();
+                    if (nextNLevels == 2) {
+                        hashValues[getLevel() + 1].push_back(0);
+                    } else {
+                        // Add empty levels for all uninitialized levels of the child node
+                        if (hashValues.find(getLevel() + nextNLevels - 1) == hashValues.end()) {
+                            hashValues[getLevel() + nextNLevels - 1] = std::vector<size_t>();
                         }
-                        for (unsigned j = 0; j < pow(4, i - 2); j++) {
-                            hashValues[getLevel() + i - 1].push_back(0);
+                        for (int j = 0; j < pow(4, nextNLevels - 2); j++) {
+                            hashValues[getLevel() + nextNLevels - 1].push_back(0);
                         }
                     }
 
@@ -407,10 +377,10 @@ std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNe
                 }
             }
         }
-        return std::pair<std::map<unsigned, std::vector<size_t>>, int>(
-            hashValues, changes.first ? changes.second.size() : -1);
+        return hashValues;
     }
 }
+
 std::vector<SyncTree*> SyncTree::enumerateLowerLevel(unsigned n)
 {
     if (n == 1) {
@@ -477,7 +447,8 @@ SyncTree* SyncTree::inflateSubtree(unsigned int level, int subtreeIndex)
 
     return currentTree;
 }
-unsigned SyncTree::getMaxLevel() {
+unsigned SyncTree::getMaxLevel()
+{
     unsigned width = this->getArea().bottomRight.x - this->getArea().topleft.x;
     unsigned levels = (unsigned)log2(width);
     return getLevel() + levels - 1;
