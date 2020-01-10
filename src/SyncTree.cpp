@@ -459,7 +459,7 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
 
     std::pair<bool, std::vector<Chunk*>> changeResponse = getChanges(since);
 
-    if (getLevel() + 1 > getMaxLevel()) {
+    if (getLevel() + 1 > getMaxLevel() || nextNLevels <= 1) {
         syncRequestResponse.changeReponse = changeResponse;
         syncRequestResponse.containsChanges = true;
 
