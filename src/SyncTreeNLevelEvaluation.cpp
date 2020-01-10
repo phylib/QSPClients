@@ -19,22 +19,34 @@ struct ChangeRecord {
 
 void writeNumRequestCSVHeader(std::ostream& outfile)
 {
-    outfile << "TickNo\tchangesPerTick\tsubtreeRequests\tchunkRequests\ttotalRequests\tsubTreeRequestSizesMin\tsubTreeR"
-               "equestSizesMax\tsubTreeRequestSizesMean\tchunkRequestSizesMin\tchunkRequestSizesMax\tchunkRequestSizesMean"
-            << std::endl;
+    outfile
+        << "TickNo\tchangesPerTick\tsubtreeRequests\tchunkRequests\ttotalRequests\tsubTreeRequestSizesMin\tsubTreeR"
+           "equestSizesMax\tsubTreeRequestSizesMean\tchunkRequestSizesMin\tchunkRequestSizesMax\tchunkRequestSizesMean"
+        << std::endl;
 }
 
 void writeNumRequests(std::ostream& outfile, unsigned tickNo, unsigned changesPerTick, unsigned subtreeRequests,
     unsigned chunkRequests, std::vector<unsigned> subtreeRequestSizes, std::vector<unsigned> chunkRequestSizes)
 {
+
+    int subtreeRequestsMin
+        = subtreeRequestSizes.size() <= 0 ? 0 : *min_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end());
+    int subtreeRequestsMax
+        = subtreeRequestSizes.size() <= 0 ? 0 : *max_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end());
+    double subtreeRequestsAvg = subtreeRequestSizes.size() <= 0
+        ? 0
+        : std::accumulate(subtreeRequestSizes.begin(), subtreeRequestSizes.end(), 0.0) / subtreeRequestSizes.size();
+    int chunkRequestsMin
+        = chunkRequestSizes.size() <= 0 ? 0 : *min_element(chunkRequestSizes.begin(), chunkRequestSizes.end());
+    int chunkRequestsMax
+        = chunkRequestSizes.size() <= 0 ? 0 : *max_element(chunkRequestSizes.begin(), chunkRequestSizes.end());
+    double chunkRequestsAvg = chunkRequestSizes.size() <= 0
+        ? 0
+        : std::accumulate(chunkRequestSizes.begin(), chunkRequestSizes.end(), 0.0) / chunkRequestSizes.size();
+
     outfile << tickNo << '\t' << changesPerTick << '\t' << subtreeRequests << '\t' << chunkRequests << '\t'
-            << (subtreeRequests + chunkRequests) << '\t'
-            << *min_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end()) << '\t'
-            << *max_element(subtreeRequestSizes.begin(), subtreeRequestSizes.end()) << '\t'
-            << std::accumulate(subtreeRequestSizes.begin(), subtreeRequestSizes.end(), 0.0) / subtreeRequestSizes.size() << '\t'
-            << *min_element(chunkRequestSizes.begin(), chunkRequestSizes.end()) << '\t'
-            << *max_element(chunkRequestSizes.begin(), chunkRequestSizes.end()) << '\t'
-            << std::accumulate(chunkRequestSizes.begin(), chunkRequestSizes.end(), 0.0) / chunkRequestSizes.size()
+            << (subtreeRequests + chunkRequests) << '\t' << subtreeRequestsMin << '\t' << subtreeRequestsMax << '\t'
+            << subtreeRequestsAvg << '\t' << chunkRequestsMin << '\t' << chunkRequestsMax << '\t' << chunkRequestsAvg
             << std::endl;
 }
 
@@ -166,15 +178,18 @@ void simulateQuadTreeSync(
             treesToCompare.erase(treesToCompare.begin());
 
             // Do not request more levels than the tree is high
-            unsigned levelsToRequest = std::min(currentSubTree->getMaxLevel() - currentSubTree->getLevel(), (unsigned) numLevels);
+            unsigned levelsToRequest
+                = std::min(currentSubTree->getMaxLevel() - currentSubTree->getLevel(), (unsigned)numLevels);
 
-            auto hashValuesResponse
-                = originalTree.getSubtree(currentSubTree->getArea())
-                      ->hashValuesOfNextNLevels(levelsToRequest, currentSubTree->getHash()); // This is the request
-            lowerSubtreeRequests++;
-            lowerSubtreeRequestSizes.push_back(getLowerSubtreeResponseSize(hashValuesResponse));
+            quadtree::SyncTree* originalTreeSubtree = originalTree.getSubtree(currentSubTree->getArea());
+            auto syncRequestResponse = originalTreeSubtree->syncRequest(
+                currentSubTree->getHash(), levelsToRequest, chunkRequestThreshold); // This is the request
 
-            if (hashValuesResponse.second > chunkRequestThreshold && currentSubTree->getLevel() + 1 < currentSubTree->getMaxLevel()) {
+            if (!syncRequestResponse.containsChanges) {
+                lowerSubtreeRequests++;
+
+                auto hashValuesResponse = syncRequestResponse.nextNLevelsResponse;
+                lowerSubtreeRequestSizes.push_back(getLowerSubtreeResponseSize(hashValuesResponse));
 
                 unsigned lowestLevel = hashValuesResponse.first.rbegin()->first;
                 auto hashValues = hashValuesResponse.first[lowestLevel];
@@ -192,8 +207,7 @@ void simulateQuadTreeSync(
 
             } else {
                 chunkRequests++;
-                const std::pair<bool, std::vector<quadtree::Chunk*>>& chunkRequest
-                    = originalTree.getSubtree(currentSubTree->getArea())->getChanges(currentSubTree->getHash());
+                const std::pair<bool, std::vector<quadtree::Chunk*>>& chunkRequest = syncRequestResponse.changeReponse;
                 chunkRequestSizes.push_back(getChunkRequestResponseSize(chunkRequest));
                 for (const auto& change : chunkRequest.second) {
                     clonedTree.change(change->pos.x, change->pos.y, change->data);
@@ -203,7 +217,8 @@ void simulateQuadTreeSync(
         clonedTree.reHash();
         if (clonedTree.getHash() != originalTree.getHash()) {
             std::cout << "Invalid evaluation: Hashes do not match at tick " << item.first << "!" << std::endl;
-            std::cout << "Parameters: numLevels: " << numLevels << ";  threshold: " << chunkRequestThreshold << std::endl;
+            std::cout << "Parameters: numLevels: " << numLevels << ";  threshold: " << chunkRequestThreshold
+                      << std::endl;
             exit(-1);
         }
 
@@ -225,12 +240,12 @@ int main(int argc, char* argv[])
     unsigned treeSize = atoi(argv[1]);
     std::string outputFolder = argv[2];
 
-    unsigned playerDuplication[] = { 0, 1, 2 };
-    unsigned lowerLevels[] = { 1, 2, 3, 4, 5 };
-    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
-//    unsigned playerDuplication[] = { 1 };
-//    unsigned lowerLevels[] = { 3 };
-//    unsigned chunkThresholds[] = { 100 };
+    //    unsigned playerDuplication[] = { 0, 1, 2 };
+    //    unsigned lowerLevels[] = { 1, 2, 5 };
+    //    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
+    unsigned playerDuplication[] = { 2 };
+    unsigned lowerLevels[] = { 3 };
+    unsigned chunkThresholds[] = { 100 };
 
     for (unsigned duplicate : playerDuplication) {
         for (unsigned lowerLevel : lowerLevels) {

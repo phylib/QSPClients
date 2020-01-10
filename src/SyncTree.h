@@ -16,6 +16,15 @@
 
 namespace quadtree {
 
+typedef std::pair<std::map<unsigned, std::vector<size_t>>, int> NextNLevelsResponseType;
+typedef std::pair<bool, std::vector<Chunk*>> ChangeResponseType;
+
+struct SyncRequestResponse {
+    bool containsChanges;
+    NextNLevelsResponseType nextNLevelsResponse;
+    ChangeResponseType changeReponse;
+};
+
 /**
  * A sync tree (either quad or more childs), which does not inflate elements unless they are required.
  */
@@ -200,7 +209,20 @@ public:
      * @param since Known hash value of the subtree
      * @return Hash values of the subtrees and the number of changes since the provided hash value
      */
-    std::pair<std::map<unsigned, std::vector<size_t>>, int> hashValuesOfNextNLevels(unsigned nextNLevels, size_t since);
+    NextNLevelsResponseType hashValuesOfNextNLevels(unsigned nextNLevels, size_t since);
+
+    /**
+     * Represents a sync request to the quad tree. First it is queried how many changes in the current subtree
+     * where made since the given hash. If the number of changes lies below the given threshold, the changes are
+     * returned. If the hash is not known, or too many changes were found, the hash-values of the next-n-values are
+     * returned
+     *
+     * @param since Hash value since when changes are queried
+     * @param nextNLevels If too many changes are found, of how many levels deeper shall hash values be returned?
+     * @param threshold Number of chunks allowed in the response.
+     * @return
+     */
+    SyncRequestResponse syncRequest(size_t since, unsigned nextNLevels, unsigned threshold);
 
     /**
      * Enumerate the tree level which lies N levels under the current node

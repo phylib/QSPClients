@@ -327,7 +327,7 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
     return pathComponents;
 }
 
-std::pair<std::map<unsigned, std::vector<size_t>>, int> SyncTree::hashValuesOfNextNLevels(
+NextNLevelsResponseType SyncTree::hashValuesOfNextNLevels(
     unsigned nextNLevels, size_t since)
 {
     auto changes = getChanges(since);
@@ -452,6 +452,29 @@ unsigned SyncTree::getMaxLevel()
     unsigned width = this->getArea().bottomRight.x - this->getArea().topleft.x;
     unsigned levels = (unsigned)log2(width);
     return getLevel() + levels - 1;
+}
+SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, unsigned threshold)
+{
+    SyncRequestResponse syncRequestResponse = SyncRequestResponse();
+
+    std::pair<bool, std::vector<Chunk*>> changeResponse = getChanges(since);
+
+    if (getLevel() + 1 > getMaxLevel()) {
+        syncRequestResponse.changeReponse = changeResponse;
+        syncRequestResponse.containsChanges = true;
+
+    } else if (!changeResponse.first || changeResponse.second.size() > threshold) {
+
+        NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
+        syncRequestResponse.containsChanges = false;
+        syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
+
+    } else {
+        syncRequestResponse.changeReponse = changeResponse;
+        syncRequestResponse.containsChanges = true;
+    }
+
+    return syncRequestResponse;
 }
 
 }
