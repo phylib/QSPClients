@@ -231,32 +231,33 @@ void simulateQuadTreeSync(
 int main(int argc, char* argv[])
 {
 
-    if (argc != 3) {
-        std::cout << "Usage: " << argv[0] << " [treeSize] [outputFolder]" << std::endl;
+    if (argc != 4) {
+        std::cout << "Usage: " << argv[0] << " [treeSize] [changelogFile] [outputFolder]" << std::endl;
         exit(-1);
     }
 
-    std::string fname = "/home/phmoll/Coding/Minecraft/GameStateChanges/chunkChanges.csv";
     unsigned treeSize = atoi(argv[1]);
-    std::string outputFolder = argv[2];
+    std::string changelogFile = argv[2];
+    std::string outputFolder = argv[3];
 
-    //    unsigned playerDuplication[] = { 0, 1, 2 };
-    //    unsigned lowerLevels[] = { 1, 2, 5 };
-    //    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
-    unsigned playerDuplication[] = { 2 };
-    unsigned lowerLevels[] = { 3 };
-    unsigned chunkThresholds[] = { 100 };
+//    unsigned playerDuplication[] = { 0, 1, 2 };
+    unsigned lowerLevels[] = { 1, 2, 3, 4, 5};
+    unsigned chunkThresholds[] = { 10, 20, 50, 100, 200, 500, 1000 };
+    unsigned playerDuplication[] = { 0 };
+//    unsigned lowerLevels[] = { 3 };
+//    unsigned chunkThresholds[] = { 1000 };
 
     for (unsigned duplicate : playerDuplication) {
         for (unsigned lowerLevel : lowerLevels) {
             for (unsigned chunkThreshold : chunkThresholds) {
 
                 // Shift all positions to the center of the Sync Tree
-                ChangeRecord record = readChangesOverTime(fname);
+                ChangeRecord record = readChangesOverTime(changelogFile);
                 int xShiftValue = std::min(record.minX, (int)treeSize / 2);
                 int yShiftValue = std::min(record.minY, (int)treeSize / 2);
                 int traceXWidth = record.maxX - record.minX;
                 int traceYWidth = record.maxY - record.minY;
+                std::cout << "width: " << traceXWidth << "; height: " << traceYWidth << std::endl;
 
                 for (std::pair<unsigned, std::vector<quadtree::Chunk>>& item : record.changesPerTick) {
                     for (quadtree::Chunk& chunk : item.second) {
