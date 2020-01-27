@@ -21,23 +21,6 @@ FIND_PACKAGE(Boost 1.65 COMPONENTS system thread program_options filesystem iost
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 
-add_executable(SyncTreeEvaluation src/main.cpp
-        src/QuadTreeStructs.h
-        src/SyncTree.cpp src/SyncTree.h
-        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc
-        src/csv/CSVReader.cpp src/csv/CSVReader.h)
-target_include_directories(SyncTreeEvaluation
-        PUBLIC
-        ${PROTOBUF_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        )
-target_link_libraries(SyncTreeEvaluation
-        PUBLIC
-        ${PROTOBUF_LIBRARIES}
-        ${Boost_LIBRARIES}
-        )
-
-
 add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
         src/QuadTreeStructs.h
         src/SyncTree.cpp src/SyncTree.h
