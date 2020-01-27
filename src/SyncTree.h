@@ -8,6 +8,7 @@
 #define QUADTREESYNCEVALUATION_SYNCTREE_H
 
 #include "QuadTreeStructs.h"
+#include "proto/SyncResponse.pb.h"
 
 #include <boost/functional/hash.hpp>
 #include <map>

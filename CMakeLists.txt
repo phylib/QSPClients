@@ -24,7 +24,19 @@ INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 add_executable(SyncTreeEvaluation src/main.cpp
         src/QuadTreeStructs.h
         src/SyncTree.cpp src/SyncTree.h
+        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc
         src/csv/CSVReader.cpp src/csv/CSVReader.h)
+target_include_directories(SyncTreeEvaluation
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        )
+target_link_libraries(SyncTreeEvaluation
+        PUBLIC
+        ${PROTOBUF_LIBRARIES}
+        ${Boost_LIBRARIES}
+        )
+
 
 add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
         src/QuadTreeStructs.h
@@ -32,16 +44,14 @@ add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
         src/proto/LowerLevelHashes.pb.h src/proto/LowerLevelHashes.pb.cc
         src/proto/ChunkChanges.pb.h src/proto/ChunkChanges.pb.cc
+        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc
         src/zip/GZip.h
         )
-
 target_include_directories(SyncTreeNLevelEval
         PUBLIC
         ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
         )
-
-# link the exe against the libraries
 target_link_libraries(SyncTreeNLevelEval
         PUBLIC
         ${PROTOBUF_LIBRARIES}
@@ -50,5 +60,15 @@ target_link_libraries(SyncTreeNLevelEval
 
 add_executable(SyncTreeTests test/SyncTreeTests.cpp
         src/QuadTreeStructs.h
-        src/SyncTree.cpp src/SyncTree.h)
-target_link_libraries(SyncTreeTests Catch2::Catch2)
+        src/SyncTree.cpp src/SyncTree.h
+        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
+target_include_directories(SyncTreeTests
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        )
+target_link_libraries(SyncTreeTests
+        PUBLIC
+        Catch2::Catch2
+        ${PROTOBUF_LIBRARIES}
+        ${Boost_LIBRARIES})
