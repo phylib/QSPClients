@@ -327,8 +327,7 @@ std::vector<unsigned char> SyncTree::getChunkPath(unsigned x, unsigned y)
     return pathComponents;
 }
 
-NextNLevelsResponseType SyncTree::hashValuesOfNextNLevels(
-    unsigned nextNLevels, size_t since)
+NextNLevelsResponseType SyncTree::hashValuesOfNextNLevels(unsigned nextNLevels, size_t since)
 {
     auto changes = getChanges(since);
 
@@ -475,6 +474,66 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
     }
 
     return syncRequestResponse;
+}
+std::pair<bool, std::vector<SyncTree*>> SyncTree::applySyncResponse(const SyncResponse& syncResponse)
+{
+
+    if (syncResponse.chunkdata()) { // Apply chunk changes
+
+        for (const auto& chunk : syncResponse.chunks()) {
+            change(chunk.x(), chunk.y(), chunk.data());
+        }
+        this->reHash();
+        const auto messageHash = (size_t)syncResponse.curhash();
+        return std::pair<bool, std::vector<SyncTree*>>(messageHash == this->getHash(), std::vector<SyncTree*>());
+
+    } else { // Compare subtree hashes
+
+        std::vector<SyncTree*> treesToCompare;
+        auto treeNodes = enumerateLowerLevel(syncResponse.treelevel() - getLevel());
+        for (unsigned i = 0; i < (unsigned)syncResponse.hashvalues_size(); i++) {
+
+            if ((treeNodes.at(i) == nullptr && syncResponse.hashvalues(i) != 0)
+                || (treeNodes.at(i) != nullptr && syncResponse.hashvalues(i) != treeNodes.at(i)->getHash())) {
+                if (treeNodes.at(i) == nullptr) {
+                    treeNodes.at(i) = inflateSubtree(syncResponse.treelevel(), i);
+                }
+                treesToCompare.push_back(treeNodes.at(i));
+            }
+        }
+
+        const auto messageHash = (size_t)syncResponse.curhash();
+        return std::pair<bool, std::vector<SyncTree*>>(messageHash == this->getHash(), treesToCompare);
+    }
+}
+
+SyncResponse SyncTree::prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold)
+{
+    SyncRequestResponse response = syncRequest(hashValue, lowerLevels, chunkThreshold);
+
+    SyncResponse syncResponse;
+    syncResponse.set_curhash(getHash());
+    syncResponse.set_chunkdata(response.containsChanges);
+    syncResponse.set_hashknown(storedChanges.first == hashValue);
+
+    if (response.containsChanges) {
+        for (const auto& chunk: response.changeReponse.second) {
+            quadtree::ChunkData protoChunk;
+            protoChunk.set_data(chunk->data);
+            protoChunk.set_x(chunk->pos.x);
+            protoChunk.set_y(chunk->pos.y);
+            syncResponse.mutable_chunks()->Add()->CopyFrom(protoChunk);
+        }
+    } else {
+
+        const unsigned responseLevel = response.nextNLevelsResponse.first.rbegin()->first;
+        std::vector<size_t> hashValues = response.nextNLevelsResponse.first.rbegin()->second;
+        syncResponse.set_treelevel(responseLevel);
+        for (const auto& value : hashValues) {
+            syncResponse.add_hashvalues(value);
+        }
+    }
+    return syncResponse;
 }
 
 }

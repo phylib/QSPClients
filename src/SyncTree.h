@@ -240,6 +240,30 @@ public:
      */
     SyncTree* inflateSubtree(unsigned int level, int subtreeIndex);
 
+    /**
+     * This method applies a sync response packet to the quadtree.
+     *
+     * When the sync response contains chunk changes, the chunk changes are applied. If the sync response contains
+     * hash values of lower level subtrees, than the hash values are compared.
+     *
+     * When the quadtree is up to date according to the given SyncResponse, true is returned. Otherwise, a list of
+     * out of sync subtrees is returned.
+     *
+     * @param syncResponse Received Sync Response packet
+     * @return (inSync: bool, subtreesToSync: List of synctrees)
+     */
+    std::pair<bool, std::vector<SyncTree*>> applySyncResponse(const SyncResponse& syncResponse);
+
+    /**
+     * Prepares a SyncResponse for the given hash value
+     * @param hashValue Given hash value
+     * @param lowerLevels Number of lower levels for subtree hashes
+     * @param chunkThreshold If more than chunkThreshold chunks changed, a response containing lower chunk levels
+     * is sent
+     * @return SyncResponse for request with given hashValue
+     */
+    SyncResponse prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
+
 protected:
     void initChilds();
 

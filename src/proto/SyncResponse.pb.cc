@@ -17,7 +17,7 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 
-namespace quadtreesync {
+namespace quadtree {
 
 namespace {
 
@@ -111,12 +111,12 @@ void protobuf_AddDesc_SyncResponse_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\022SyncResponse.proto\022\014quadtreesync\"\225\001\n\014S"
-    "yncResponse\022\021\n\thashKnown\030\001 \002(\010\022\021\n\tchunkD"
-    "ata\030\002 \002(\010\022\017\n\007curHash\030\003 \002(\004\022\'\n\006chunks\030\004 \003"
-    "(\0132\027.quadtreesync.ChunkData\022\021\n\ttreeLevel"
-    "\030\005 \001(\r\022\022\n\nhashValues\030\006 \003(\004\"/\n\tChunkData\022"
-    "\t\n\001x\030\001 \002(\004\022\t\n\001y\030\002 \002(\004\022\014\n\004data\030\003 \002(\004", 235);
+    "\n\022SyncResponse.proto\022\010quadtree\"\221\001\n\014SyncR"
+    "esponse\022\021\n\thashKnown\030\001 \002(\010\022\021\n\tchunkData\030"
+    "\002 \002(\010\022\017\n\007curHash\030\003 \002(\004\022#\n\006chunks\030\004 \003(\0132\023"
+    ".quadtree.ChunkData\022\021\n\ttreeLevel\030\005 \001(\r\022\022"
+    "\n\nhashValues\030\006 \003(\004\"/\n\tChunkData\022\t\n\001x\030\001 \002"
+    "(\004\022\t\n\001y\030\002 \002(\004\022\014\n\004data\030\003 \002(\004", 227);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "SyncResponse.proto", &protobuf_RegisterTypes);
   SyncResponse::default_instance_ = new SyncResponse();
@@ -147,7 +147,7 @@ const int SyncResponse::kHashValuesFieldNumber;
 SyncResponse::SyncResponse()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(constructor:quadtree.SyncResponse)
 }
 
 void SyncResponse::InitAsDefaultInstance() {
@@ -158,7 +158,7 @@ SyncResponse::SyncResponse(const SyncResponse& from)
     _internal_metadata_(NULL) {
   SharedCtor();
   MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(copy_constructor:quadtree.SyncResponse)
 }
 
 void SyncResponse::SharedCtor() {
@@ -171,7 +171,7 @@ void SyncResponse::SharedCtor() {
 }
 
 SyncResponse::~SyncResponse() {
-  // @@protoc_insertion_point(destructor:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(destructor:quadtree.SyncResponse)
   SharedDtor();
 }
 
@@ -206,7 +206,7 @@ SyncResponse* SyncResponse::New(::google::protobuf::Arena* arena) const {
 }
 
 void SyncResponse::Clear() {
-// @@protoc_insertion_point(message_clear_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(message_clear_start:quadtree.SyncResponse)
 #if defined(__clang__)
 #define ZR_HELPER_(f) \
   _Pragma("clang diagnostic push") \
@@ -240,7 +240,7 @@ bool SyncResponse::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(parse_start:quadtree.SyncResponse)
   for (;;) {
     ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
     tag = p.first;
@@ -290,7 +290,7 @@ bool SyncResponse::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated .quadtreesync.ChunkData chunks = 4;
+      // repeated .quadtree.ChunkData chunks = 4;
       case 4: {
         if (tag == 34) {
          parse_chunks:
@@ -355,17 +355,17 @@ bool SyncResponse::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(parse_success:quadtree.SyncResponse)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(parse_failure:quadtree.SyncResponse)
   return false;
 #undef DO_
 }
 
 void SyncResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(serialize_start:quadtree.SyncResponse)
   // required bool hashKnown = 1;
   if (has_hashknown()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(1, this->hashknown(), output);
@@ -381,7 +381,7 @@ void SyncResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(3, this->curhash(), output);
   }
 
-  // repeated .quadtreesync.ChunkData chunks = 4;
+  // repeated .quadtree.ChunkData chunks = 4;
   for (unsigned int i = 0, n = this->chunks_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       4, this->chunks(i), output);
@@ -402,12 +402,12 @@ void SyncResponse::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(serialize_end:quadtree.SyncResponse)
 }
 
 ::google::protobuf::uint8* SyncResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(serialize_to_array_start:quadtree.SyncResponse)
   // required bool hashKnown = 1;
   if (has_hashknown()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(1, this->hashknown(), target);
@@ -423,7 +423,7 @@ void SyncResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(3, this->curhash(), target);
   }
 
-  // repeated .quadtreesync.ChunkData chunks = 4;
+  // repeated .quadtree.ChunkData chunks = 4;
   for (unsigned int i = 0, n = this->chunks_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
@@ -445,12 +445,12 @@ void SyncResponse::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(serialize_to_array_end:quadtree.SyncResponse)
   return target;
 }
 
 int SyncResponse::RequiredFieldsByteSizeFallback() const {
-// @@protoc_insertion_point(required_fields_byte_size_fallback_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:quadtree.SyncResponse)
   int total_size = 0;
 
   if (has_hashknown()) {
@@ -473,7 +473,7 @@ int SyncResponse::RequiredFieldsByteSizeFallback() const {
   return total_size;
 }
 int SyncResponse::ByteSize() const {
-// @@protoc_insertion_point(message_byte_size_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(message_byte_size_start:quadtree.SyncResponse)
   int total_size = 0;
 
   if (((_has_bits_[0] & 0x00000007) ^ 0x00000007) == 0) {  // All required fields are present.
@@ -498,7 +498,7 @@ int SyncResponse::ByteSize() const {
         this->treelevel());
   }
 
-  // repeated .quadtreesync.ChunkData chunks = 4;
+  // repeated .quadtree.ChunkData chunks = 4;
   total_size += 1 * this->chunks_size();
   for (int i = 0; i < this->chunks_size(); i++) {
     total_size +=
@@ -528,7 +528,7 @@ int SyncResponse::ByteSize() const {
 }
 
 void SyncResponse::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(generalized_merge_from_start:quadtree.SyncResponse)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
@@ -536,16 +536,16 @@ void SyncResponse::MergeFrom(const ::google::protobuf::Message& from) {
       ::google::protobuf::internal::DynamicCastToGenerated<const SyncResponse>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:quadtree.SyncResponse)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:quadtreesync.SyncResponse)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:quadtree.SyncResponse)
     MergeFrom(*source);
   }
 }
 
 void SyncResponse::MergeFrom(const SyncResponse& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(class_specific_merge_from_start:quadtree.SyncResponse)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
@@ -571,14 +571,14 @@ void SyncResponse::MergeFrom(const SyncResponse& from) {
 }
 
 void SyncResponse::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(generalized_copy_from_start:quadtree.SyncResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void SyncResponse::CopyFrom(const SyncResponse& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:quadtreesync.SyncResponse)
+// @@protoc_insertion_point(class_specific_copy_from_start:quadtree.SyncResponse)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -633,13 +633,13 @@ void SyncResponse::clear_hashknown() {
   clear_has_hashknown();
 }
  bool SyncResponse::hashknown() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.hashKnown)
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.hashKnown)
   return hashknown_;
 }
  void SyncResponse::set_hashknown(bool value) {
   set_has_hashknown();
   hashknown_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.SyncResponse.hashKnown)
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.hashKnown)
 }
 
 // required bool chunkData = 2;
@@ -657,13 +657,13 @@ void SyncResponse::clear_chunkdata() {
   clear_has_chunkdata();
 }
  bool SyncResponse::chunkdata() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.chunkData)
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.chunkData)
   return chunkdata_;
 }
  void SyncResponse::set_chunkdata(bool value) {
   set_has_chunkdata();
   chunkdata_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.SyncResponse.chunkData)
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.chunkData)
 }
 
 // required uint64 curHash = 3;
@@ -681,42 +681,42 @@ void SyncResponse::clear_curhash() {
   clear_has_curhash();
 }
  ::google::protobuf::uint64 SyncResponse::curhash() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.curHash)
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.curHash)
   return curhash_;
 }
  void SyncResponse::set_curhash(::google::protobuf::uint64 value) {
   set_has_curhash();
   curhash_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.SyncResponse.curHash)
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.curHash)
 }
 
-// repeated .quadtreesync.ChunkData chunks = 4;
+// repeated .quadtree.ChunkData chunks = 4;
 int SyncResponse::chunks_size() const {
   return chunks_.size();
 }
 void SyncResponse::clear_chunks() {
   chunks_.Clear();
 }
-const ::quadtreesync::ChunkData& SyncResponse::chunks(int index) const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.chunks)
+const ::quadtree::ChunkData& SyncResponse::chunks(int index) const {
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.chunks)
   return chunks_.Get(index);
 }
-::quadtreesync::ChunkData* SyncResponse::mutable_chunks(int index) {
-  // @@protoc_insertion_point(field_mutable:quadtreesync.SyncResponse.chunks)
+::quadtree::ChunkData* SyncResponse::mutable_chunks(int index) {
+  // @@protoc_insertion_point(field_mutable:quadtree.SyncResponse.chunks)
   return chunks_.Mutable(index);
 }
-::quadtreesync::ChunkData* SyncResponse::add_chunks() {
-  // @@protoc_insertion_point(field_add:quadtreesync.SyncResponse.chunks)
+::quadtree::ChunkData* SyncResponse::add_chunks() {
+  // @@protoc_insertion_point(field_add:quadtree.SyncResponse.chunks)
   return chunks_.Add();
 }
-::google::protobuf::RepeatedPtrField< ::quadtreesync::ChunkData >*
+::google::protobuf::RepeatedPtrField< ::quadtree::ChunkData >*
 SyncResponse::mutable_chunks() {
-  // @@protoc_insertion_point(field_mutable_list:quadtreesync.SyncResponse.chunks)
+  // @@protoc_insertion_point(field_mutable_list:quadtree.SyncResponse.chunks)
   return &chunks_;
 }
-const ::google::protobuf::RepeatedPtrField< ::quadtreesync::ChunkData >&
+const ::google::protobuf::RepeatedPtrField< ::quadtree::ChunkData >&
 SyncResponse::chunks() const {
-  // @@protoc_insertion_point(field_list:quadtreesync.SyncResponse.chunks)
+  // @@protoc_insertion_point(field_list:quadtree.SyncResponse.chunks)
   return chunks_;
 }
 
@@ -735,13 +735,13 @@ void SyncResponse::clear_treelevel() {
   clear_has_treelevel();
 }
  ::google::protobuf::uint32 SyncResponse::treelevel() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.treeLevel)
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.treeLevel)
   return treelevel_;
 }
  void SyncResponse::set_treelevel(::google::protobuf::uint32 value) {
   set_has_treelevel();
   treelevel_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.SyncResponse.treeLevel)
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.treeLevel)
 }
 
 // repeated uint64 hashValues = 6;
@@ -752,25 +752,25 @@ void SyncResponse::clear_hashvalues() {
   hashvalues_.Clear();
 }
  ::google::protobuf::uint64 SyncResponse::hashvalues(int index) const {
-  // @@protoc_insertion_point(field_get:quadtreesync.SyncResponse.hashValues)
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.hashValues)
   return hashvalues_.Get(index);
 }
  void SyncResponse::set_hashvalues(int index, ::google::protobuf::uint64 value) {
   hashvalues_.Set(index, value);
-  // @@protoc_insertion_point(field_set:quadtreesync.SyncResponse.hashValues)
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.hashValues)
 }
  void SyncResponse::add_hashvalues(::google::protobuf::uint64 value) {
   hashvalues_.Add(value);
-  // @@protoc_insertion_point(field_add:quadtreesync.SyncResponse.hashValues)
+  // @@protoc_insertion_point(field_add:quadtree.SyncResponse.hashValues)
 }
  const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
 SyncResponse::hashvalues() const {
-  // @@protoc_insertion_point(field_list:quadtreesync.SyncResponse.hashValues)
+  // @@protoc_insertion_point(field_list:quadtree.SyncResponse.hashValues)
   return hashvalues_;
 }
  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 SyncResponse::mutable_hashvalues() {
-  // @@protoc_insertion_point(field_mutable_list:quadtreesync.SyncResponse.hashValues)
+  // @@protoc_insertion_point(field_mutable_list:quadtree.SyncResponse.hashValues)
   return &hashvalues_;
 }
 
@@ -787,7 +787,7 @@ const int ChunkData::kDataFieldNumber;
 ChunkData::ChunkData()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
   SharedCtor();
-  // @@protoc_insertion_point(constructor:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(constructor:quadtree.ChunkData)
 }
 
 void ChunkData::InitAsDefaultInstance() {
@@ -798,7 +798,7 @@ ChunkData::ChunkData(const ChunkData& from)
     _internal_metadata_(NULL) {
   SharedCtor();
   MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(copy_constructor:quadtree.ChunkData)
 }
 
 void ChunkData::SharedCtor() {
@@ -810,7 +810,7 @@ void ChunkData::SharedCtor() {
 }
 
 ChunkData::~ChunkData() {
-  // @@protoc_insertion_point(destructor:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(destructor:quadtree.ChunkData)
   SharedDtor();
 }
 
@@ -845,7 +845,7 @@ ChunkData* ChunkData::New(::google::protobuf::Arena* arena) const {
 }
 
 void ChunkData::Clear() {
-// @@protoc_insertion_point(message_clear_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(message_clear_start:quadtree.ChunkData)
 #if defined(__clang__)
 #define ZR_HELPER_(f) \
   _Pragma("clang diagnostic push") \
@@ -877,7 +877,7 @@ bool ChunkData::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
 #define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(parse_start:quadtree.ChunkData)
   for (;;) {
     ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
     tag = p.first;
@@ -941,17 +941,17 @@ bool ChunkData::MergePartialFromCodedStream(
     }
   }
 success:
-  // @@protoc_insertion_point(parse_success:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(parse_success:quadtree.ChunkData)
   return true;
 failure:
-  // @@protoc_insertion_point(parse_failure:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(parse_failure:quadtree.ChunkData)
   return false;
 #undef DO_
 }
 
 void ChunkData::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(serialize_start:quadtree.ChunkData)
   // required uint64 x = 1;
   if (has_x()) {
     ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->x(), output);
@@ -971,12 +971,12 @@ void ChunkData::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
   }
-  // @@protoc_insertion_point(serialize_end:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(serialize_end:quadtree.ChunkData)
 }
 
 ::google::protobuf::uint8* ChunkData::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(serialize_to_array_start:quadtree.ChunkData)
   // required uint64 x = 1;
   if (has_x()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->x(), target);
@@ -996,12 +996,12 @@ void ChunkData::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
   }
-  // @@protoc_insertion_point(serialize_to_array_end:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(serialize_to_array_end:quadtree.ChunkData)
   return target;
 }
 
 int ChunkData::RequiredFieldsByteSizeFallback() const {
-// @@protoc_insertion_point(required_fields_byte_size_fallback_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(required_fields_byte_size_fallback_start:quadtree.ChunkData)
   int total_size = 0;
 
   if (has_x()) {
@@ -1028,7 +1028,7 @@ int ChunkData::RequiredFieldsByteSizeFallback() const {
   return total_size;
 }
 int ChunkData::ByteSize() const {
-// @@protoc_insertion_point(message_byte_size_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(message_byte_size_start:quadtree.ChunkData)
   int total_size = 0;
 
   if (((_has_bits_[0] & 0x00000007) ^ 0x00000007) == 0) {  // All required fields are present.
@@ -1062,7 +1062,7 @@ int ChunkData::ByteSize() const {
 }
 
 void ChunkData::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(generalized_merge_from_start:quadtree.ChunkData)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
@@ -1070,16 +1070,16 @@ void ChunkData::MergeFrom(const ::google::protobuf::Message& from) {
       ::google::protobuf::internal::DynamicCastToGenerated<const ChunkData>(
           &from);
   if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:quadtree.ChunkData)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:quadtreesync.ChunkData)
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:quadtree.ChunkData)
     MergeFrom(*source);
   }
 }
 
 void ChunkData::MergeFrom(const ChunkData& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(class_specific_merge_from_start:quadtree.ChunkData)
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
@@ -1100,14 +1100,14 @@ void ChunkData::MergeFrom(const ChunkData& from) {
 }
 
 void ChunkData::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(generalized_copy_from_start:quadtree.ChunkData)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void ChunkData::CopyFrom(const ChunkData& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:quadtreesync.ChunkData)
+// @@protoc_insertion_point(class_specific_copy_from_start:quadtree.ChunkData)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1158,13 +1158,13 @@ void ChunkData::clear_x() {
   clear_has_x();
 }
  ::google::protobuf::uint64 ChunkData::x() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.ChunkData.x)
+  // @@protoc_insertion_point(field_get:quadtree.ChunkData.x)
   return x_;
 }
  void ChunkData::set_x(::google::protobuf::uint64 value) {
   set_has_x();
   x_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.ChunkData.x)
+  // @@protoc_insertion_point(field_set:quadtree.ChunkData.x)
 }
 
 // required uint64 y = 2;
@@ -1182,13 +1182,13 @@ void ChunkData::clear_y() {
   clear_has_y();
 }
  ::google::protobuf::uint64 ChunkData::y() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.ChunkData.y)
+  // @@protoc_insertion_point(field_get:quadtree.ChunkData.y)
   return y_;
 }
  void ChunkData::set_y(::google::protobuf::uint64 value) {
   set_has_y();
   y_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.ChunkData.y)
+  // @@protoc_insertion_point(field_set:quadtree.ChunkData.y)
 }
 
 // required uint64 data = 3;
@@ -1206,19 +1206,19 @@ void ChunkData::clear_data() {
   clear_has_data();
 }
  ::google::protobuf::uint64 ChunkData::data() const {
-  // @@protoc_insertion_point(field_get:quadtreesync.ChunkData.data)
+  // @@protoc_insertion_point(field_get:quadtree.ChunkData.data)
   return data_;
 }
  void ChunkData::set_data(::google::protobuf::uint64 value) {
   set_has_data();
   data_ = value;
-  // @@protoc_insertion_point(field_set:quadtreesync.ChunkData.data)
+  // @@protoc_insertion_point(field_set:quadtree.ChunkData.data)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
 
-}  // namespace quadtreesync
+}  // namespace quadtree
 
 // @@protoc_insertion_point(global_scope)

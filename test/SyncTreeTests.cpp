@@ -1,3 +1,4 @@
+#include <src/proto/SyncResponse.pb.h>
 //
 // Created by phmoll on 11/15/19.
 //
@@ -93,7 +94,8 @@ TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
         REQUIRE_THROWS(SyncTree(rect));
     }
 
-    SECTION("Test the max levels calculation") {
+    SECTION("Test the max levels calculation")
+    {
         Rectangle rectangle(Point(0, 0), Point(8, 8));
         SyncTree tree(rectangle);
 
@@ -101,7 +103,7 @@ TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
 
         Rectangle largerRectangle(Point(0, 0), Point(16, 16));
         SyncTree largerTree(largerRectangle);
-        largerTree.change(0,0); // Inflate subtree
+        largerTree.change(0, 0); // Inflate subtree
         SyncTree* subtree = largerTree.getSubtree(rectangle);
         REQUIRE(subtree->getMaxLevel() == 4);
     }
@@ -481,7 +483,8 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                 "When requesting hash-values of the next 3 levels should deliver the non-empty root and 1 empty levels")
             {
 
-                std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(3, initial_hash);
+                std::pair<std::map<unsigned, std::vector<size_t>>, int> result
+                    = tree.hashValuesOfNextNLevels(3, initial_hash);
                 std::map<unsigned, std::vector<size_t>> hashValues = result.first;
                 REQUIRE(hashValues.size() == 1);
 
@@ -494,7 +497,8 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                 }
             }
 
-            THEN("when enumerating 3 lower levels, 64 nullpointers shall be found") {
+            THEN("when enumerating 3 lower levels, 64 nullpointers shall be found")
+            {
                 int numNullptrs = 0;
                 for (const auto subtree : tree.enumerateLowerLevel(3)) {
                     REQUIRE(subtree == nullptr);
@@ -512,13 +516,14 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
             THEN("the hash values of the other quarters should be zero")
             {
 
-                std::pair<std::map<unsigned, std::vector<size_t>>, int> result = tree.hashValuesOfNextNLevels(4, initial_hash);
+                std::pair<std::map<unsigned, std::vector<size_t>>, int> result
+                    = tree.hashValuesOfNextNLevels(4, initial_hash);
                 std::map<unsigned, std::vector<size_t>> hashValues = result.first;
                 REQUIRE(hashValues.size() == 1);
 
-                //REQUIRE(hashValues[1].size() == 1);
-                //REQUIRE(hashValues[2].size() == 4);
-                //REQUIRE(hashValues[3].size() == 16);
+                // REQUIRE(hashValues[1].size() == 1);
+                // REQUIRE(hashValues[2].size() == 4);
+                // REQUIRE(hashValues[3].size() == 16);
                 REQUIRE(hashValues[4].size() == 64);
 
                 /*REQUIRE(hashValues[2].at(0) == 0);
@@ -541,12 +546,14 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
                 }
             }
 
-            THEN("the number of returned changes should be one") {
+            THEN("the number of returned changes should be one")
+            {
                 auto result = tree.hashValuesOfNextNLevels(4, initial_hash);
                 REQUIRE(result.second == 1);
             }
 
-            THEN("when enumerating 3 lower levels, one node has to be initialized, the other 63 are nullptrs") {
+            THEN("when enumerating 3 lower levels, one node has to be initialized, the other 63 are nullptrs")
+            {
                 int numNullptrs = 0;
                 int numInit = 0;
                 for (const auto subtree : tree.enumerateLowerLevel(3)) {
@@ -563,7 +570,8 @@ SCENARIO("Test function that delivers Hash-Values of N-Levels")
     }
 }
 
-TEST_CASE("Correctly inflate subtrees") {
+TEST_CASE("Correctly inflate subtrees")
+{
     GIVEN("A 64x64 area is covered by an empty SyncTree")
     {
         unsigned treeDimension = 64;
@@ -576,20 +584,23 @@ TEST_CASE("Correctly inflate subtrees") {
         REQUIRE(area.bottomRight.y - area.topleft.y == treeDimension);
         std::size_t initial_hash = tree.getHash();
 
-        WHEN("subtree 1 of level 2 is inflated") {
+        WHEN("subtree 1 of level 2 is inflated")
+        {
             tree.inflateSubtree(2, 1);
 
-            THEN("Subtree 32,0-64,32 should not be null") {
+            THEN("Subtree 32,0-64,32 should not be null")
+            {
                 Rectangle r2(Point(32, 0), Point(64, 32));
                 REQUIRE(tree.getSubtree(r2) != nullptr);
             }
-
         }
-        WHEN("subtree 1 of level 2 is inflated twice") {
+        WHEN("subtree 1 of level 2 is inflated twice")
+        {
             SyncTree* st1 = tree.inflateSubtree(2, 1);
             SyncTree* st2 = tree.inflateSubtree(2, 1);
 
-            THEN("Only one inflation should have created a new node") {
+            THEN("Only one inflation should have created a new node")
+            {
                 Rectangle r2(Point(32, 0), Point(64, 32));
                 REQUIRE(tree.getSubtree(r2) != nullptr);
                 REQUIRE(tree.getSubtree(r2) == st1);
@@ -597,31 +608,31 @@ TEST_CASE("Correctly inflate subtrees") {
             }
         }
 
-
-
-        WHEN("subtree 10 of level 3 is inflated") {
+        WHEN("subtree 10 of level 3 is inflated")
+        {
             tree.inflateSubtree(3, 10);
 
-            THEN("Subtree 0,32-32,64 should not be null") {
+            THEN("Subtree 0,32-32,64 should not be null")
+            {
                 Rectangle r2(Point(0, 32), Point(32, 64));
                 REQUIRE(tree.getSubtree(r2) != nullptr);
             }
 
-            THEN("Subtree 0,48-16,64 should not be null") {
+            THEN("Subtree 0,48-16,64 should not be null")
+            {
                 Rectangle r2(Point(0, 48), Point(16, 64));
                 REQUIRE(tree.getSubtree(r2) != nullptr);
             }
-
         }
 
-
-
-        WHEN("subtree 0,1,2 of level 3 is inflated") {
+        WHEN("subtree 0,1,2 of level 3 is inflated")
+        {
             tree.inflateSubtree(3, 0);
             tree.inflateSubtree(3, 1);
             tree.inflateSubtree(3, 2);
 
-            THEN("The coordinates of the subtree have to be correct") {
+            THEN("The coordinates of the subtree have to be correct")
+            {
                 const std::vector<SyncTree*>& subtrees = tree.enumerateLowerLevel(2);
 
                 REQUIRE(subtrees.at(0)->getArea().topleft.x == 0);
@@ -639,18 +650,128 @@ TEST_CASE("Correctly inflate subtrees") {
                 REQUIRE(subtrees.at(2)->getArea().bottomRight.x == 16);
                 REQUIRE(subtrees.at(2)->getArea().bottomRight.y == 32);
             }
-
         }
 
-        WHEN("Subtree 10 of level 1 is inflated, and the childs of the returned subtree are inflated") {
+        WHEN("Subtree 10 of level 1 is inflated, and the childs of the returned subtree are inflated")
+        {
             SyncTree* st = tree.inflateSubtree(3, 10);
             st->inflateSubtree(4, 0);
 
-            THEN("Subtree 0,48,8,56 should be inflated") {
+            THEN("Subtree 0,48,8,56 should be inflated")
+            {
                 Rectangle r2(Point(0, 48), Point(8, 56));
                 REQUIRE(tree.getSubtree(r2) != nullptr);
             }
+        }
+    }
+}
 
+TEST_CASE("Correctly create and apply SyncResponse message")
+{
+
+    GIVEN("Two sync trees cover the same 64x64 area, where one of them is the original tree and one the clone")
+    {
+        unsigned treeDimension = 64;
+        Rectangle rectangle(Point(0, 0), Point(treeDimension, treeDimension));
+
+        SyncTree originalTree(rectangle);
+        SyncTree clonedTree(rectangle);
+
+        WHEN("The original tree is changed and rehashed")
+        {
+
+            originalTree.change(0, 0);
+            originalTree.change(1, 1);
+            originalTree.change(0, 1);
+
+            originalTree.reHash();
+
+            THEN("A sync request with the hash of the cloned tree should return the changes if the threshold is high "
+                 "enough")
+            {
+
+                SyncResponse response = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 100);
+
+                REQUIRE(response.chunkdata());
+                REQUIRE(response.chunks_size() == 3);
+                REQUIRE(response.hashvalues_size() == 0);
+                REQUIRE(response.hashknown());
+                REQUIRE(response.curhash() == originalTree.getHash());
+            }
+
+            THEN("A sync request with the hash of the cloned tree should return hash values of lower levels if the "
+                 "threshold is too low")
+            {
+
+                SyncResponse response = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 2);
+
+                REQUIRE(!response.chunkdata());
+                REQUIRE(response.chunks_size() == 0);
+                REQUIRE(response.hashvalues_size() == 16);
+                REQUIRE(response.hashknown());
+                REQUIRE(response.curhash() == originalTree.getHash());
+                REQUIRE(response.treelevel() == 3);
+            }
+        }
+
+        WHEN("The original tree is changed, rehashed and a SyncResponse from the cloned tree is created")
+        {
+
+            originalTree.change(0, 0);
+            originalTree.change(1, 1);
+            originalTree.change(2, 1);
+
+            originalTree.reHash();
+
+            SyncResponse chunkResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 100);
+
+            THEN("applying the SyncResponse containing chunk changes should result in identical trees")
+            {
+
+                auto applyResult = clonedTree.applySyncResponse(chunkResponse);
+                REQUIRE(applyResult.first);
+                REQUIRE(applyResult.second.empty());
+                REQUIRE(clonedTree.getHash() == originalTree.getHash());
+            }
+
+            THEN("applying the SyncReponse containing lower-level hash values should result in subtrees which are not "
+                 "identical")
+            {
+                size_t oldHash = clonedTree.getHash();
+                SyncResponse hashResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 2);
+                auto applyResult = clonedTree.applySyncResponse(hashResponse);
+                REQUIRE(oldHash == clonedTree.getHash());
+                REQUIRE(!applyResult.first);
+                REQUIRE(applyResult.second.size() == 1);
+
+                hashResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 6, 2);
+                applyResult = clonedTree.applySyncResponse(hashResponse);
+                REQUIRE(applyResult.second.size() == 2);
+
+            }
+        }
+
+        WHEN("the original tree is changed and the old state is unknown for the cloned tree") {
+
+
+            originalTree.change(0, 0);
+            originalTree.change(1, 1);
+            originalTree.change(2, 1);
+            originalTree.reHash();
+
+            originalTree.change(0, 3);
+            originalTree.change(1, 1);
+            originalTree.change(2, 6);
+
+            originalTree.reHash();
+
+            SyncResponse syncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 100);
+
+            THEN("The sync response has to contain the hash values of the lower levels") {
+                REQUIRE(!syncResponse.hashknown());
+                REQUIRE(!syncResponse.chunkdata());
+                REQUIRE(syncResponse.hashvalues_size() > 0);
+            }
         }
     }
 }

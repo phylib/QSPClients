@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package quadtreesync;
+package quadtree;
 
 // Generation: protoc --proto_path=proto/ --cpp_out src/proto/ proto/SyncResponse.proto
 
