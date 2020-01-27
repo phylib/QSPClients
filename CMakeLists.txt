@@ -4,19 +4,19 @@ project(QuadTreeSyncEvaluation)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable")
 
+# Check if Catch2 (Lib for tests) is installed
 find_package(Catch2 REQUIRED)
 
-# find the protobuf compiler and libraries
+# Check if protobuf is installed
 find_package(Protobuf REQUIRED)
 
-# Generate the .h and .cxx files
-#SET(PROTO_SRCS src/proto)
-#SET(PROTO_HDRS src/proto)
-#message ("PROTO_SRCS = ${PROTO_SRCS}")
-#message ("PROTO_HDRS = ${PROTO_HDRS}")
-#PROTOBUF_GENERATE_CPP(src/proto src/proto proto/ChunkChanges.proto)
-#PROTOBUF_GENERATE_CPP(src/proto src/proto proto/LowerLevelHashes.proto)
+# Check if NDN-CXX is installed
+INCLUDE(FindPkgConfig)
+pkg_check_modules(NDN_CXX libndn-cxx)
+include_directories(${NDN_CXX_INCLUDE_DIRS})
 
+
+# Check if Boost and all components are installed
 FIND_PACKAGE(Boost 1.65 COMPONENTS system thread program_options filesystem iostreams REQUIRED)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
@@ -55,3 +55,19 @@ target_link_libraries(SyncTreeTests
         Catch2::Catch2
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES})
+
+add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
+        src/QuadTreeStructs.h
+        src/SyncTree.cpp src/SyncTree.h
+        src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
+        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
+target_include_directories(EvaluationSyncClient
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        )
+target_link_libraries(EvaluationSyncClient
+        PUBLIC
+        ${PROTOBUF_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${NDN_CXX_LIBRARIES})
