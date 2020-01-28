@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(QuadTreeSyncEvaluation)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable")
+set(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
 
 # Check if Catch2 (Lib for tests) is installed
 find_package(Catch2 REQUIRED)
@@ -60,6 +60,7 @@ add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/QuadTreeStructs.h
         src/SyncTree.cpp src/SyncTree.h
         src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
+        src/csv/CSVReader.cpp src/csv/CSVReader.h
         src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
 target_include_directories(EvaluationSyncClient
         PUBLIC

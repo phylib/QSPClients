@@ -1,4 +1,12 @@
+
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <mutex>
+#include <thread>
 #include <utility>
+
+#include <ndn-cxx/face.hpp>
 
 //
 // Created by phmoll on 1/27/20.
@@ -8,6 +16,8 @@
 #define QUADTREESYNCEVALUATION_SERVERMODESYNCCLIENT_H
 
 #include "SyncTree.h"
+
+using namespace std::literals;
 
 namespace quadtree {
 
@@ -19,10 +29,12 @@ namespace quadtree {
 class ServerModeSyncClient {
 
 public:
-    ServerModeSyncClient(Rectangle area, Rectangle responsibleArea, unsigned initialRequestLevel)
+    ServerModeSyncClient(Rectangle area, Rectangle responsibleArea, unsigned initialRequestLevel,
+        std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime)
         : world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
         , initialRequestLevel(initialRequestLevel)
+        , changesOverTime(std::move(changesOverTime))
     {
     }
 
@@ -31,11 +43,22 @@ public:
 
     void startSynchronization();
 
+protected:
+    void applyChangesOverTime();
 
 protected:
     SyncTree world;
     Rectangle responsibleArea;
     unsigned initialRequestLevel;
+
+    ndn::Face face;
+
+    std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime;
+
+    std::atomic<bool> isRunning = true;
+    std::thread publisherThread;
+    std::atomic<unsigned> currentTick = 0;
+    std::mutex treeAccessMutex;
 };
 
 }
