@@ -787,7 +787,7 @@ TEST_CASE("Test NDN parts of the sync tree")
 
         WHEN("the name of the root is serialized")
         {
-            ndn::Name name = syncTree.subTreeToName();
+            ndn::Name name = syncTree.subtreeToName();
             std::string stringName = name.toUri();
             THEN("The name should be /") { REQUIRE(stringName.compare("/") == 0); }
         }
@@ -797,7 +797,7 @@ TEST_CASE("Test NDN parts of the sync tree")
             syncTree.change(0, 0);
             Rectangle subtreeRect(Point(0, 0), Point(2, 2));
             SyncTree* subtree = syncTree.getSubtree(subtreeRect);
-            ndn::Name name = subtree->subTreeToName();
+            ndn::Name name = subtree->subtreeToName();
             std::string stringName = name.toUri();
             THEN("The result should be /0/0/0/0/0") { REQUIRE(stringName.compare("/0/0/0/0/0") == 0); }
         }
@@ -807,9 +807,24 @@ TEST_CASE("Test NDN parts of the sync tree")
             syncTree.change(63, 63);
             Rectangle subtreeRect(Point(62, 62), Point(64, 64));
             SyncTree* subtree = syncTree.getSubtree(subtreeRect);
-            ndn::Name name = subtree->subTreeToName();
+            ndn::Name name = subtree->subtreeToName();
             std::string stringName = name.toUri();
             THEN("The result should be /3/3/3/3/3") { REQUIRE(stringName.compare("/3/3/3/3/3") == 0); }
+        }
+
+        WHEN("the name of a subtree with hash is requested") {
+            syncTree.change(63, 63);
+            Rectangle subtreeRect(Point(62, 62), Point(64, 64));
+            SyncTree* subtree = syncTree.getSubtree(subtreeRect);
+            ndn::Name name = subtree->subtreeToName(true);
+
+            THEN("it should be possible to decode the correct hash") {
+                ndn::Name::Component hashComponent = name.get(name.size() - 1);
+                size_t subtreeHash = hashComponent.toNumber();
+                REQUIRE(subtree->getHash() == subtreeHash);
+                REQUIRE(name.size() == 7);
+                REQUIRE(name.get(name.size() - 2).toUri().compare("h") == 0);
+            }
         }
     }
 }

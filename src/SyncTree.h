@@ -142,7 +142,7 @@ public:
      *
      * @return The hash value of the tree node
      */
-    std::size_t getHash();
+    std::size_t getHash() const;
 
     /**
      * Rehashes the sync tree node and all its childs nodes.
@@ -266,7 +266,7 @@ public:
      */
     SyncResponse prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
 
-    ndn::Name subTreeToName() const;
+    ndn::Name subtreeToName(bool includeSubtreeHash=false) const;
 
 protected:
     void initChilds();

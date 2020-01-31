@@ -166,7 +166,7 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
     }
 }
 
-std::size_t SyncTree::getHash() { return currentHash; }
+std::size_t SyncTree::getHash() const { return currentHash; }
 
 void SyncTree::reHash(bool force)
 {
@@ -535,7 +535,7 @@ SyncResponse SyncTree::prepareSyncResponse(const size_t hashValue, unsigned lowe
     }
     return syncResponse;
 }
-ndn::Name SyncTree::subTreeToName() const
+ndn::Name SyncTree::subtreeToName(bool includeSubtreeHash) const
 {
     ndn::Name subtreeName;
     std::vector<unsigned> nameComponents;
@@ -556,6 +556,11 @@ ndn::Name SyncTree::subTreeToName() const
     // Create name from name components
     for (const auto& component : nameComponents) {
         subtreeName.append(std::to_string(component));
+    }
+
+    if (includeSubtreeHash) {
+        subtreeName.append("h");
+        subtreeName.appendNumber(this->getHash());
     }
 
     return subtreeName;
