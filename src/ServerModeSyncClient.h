@@ -29,9 +29,10 @@ namespace quadtree {
 class ServerModeSyncClient {
 
 public:
-    ServerModeSyncClient(Rectangle area, Rectangle responsibleArea, unsigned initialRequestLevel,
+    ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea, unsigned initialRequestLevel,
         std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime)
-        : world(std::move(area))
+        : worldPrefix(std::move(worldPrefix))
+        , world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
         , initialRequestLevel(initialRequestLevel)
         , changesOverTime(std::move(changesOverTime))
@@ -77,6 +78,7 @@ public:
     const unsigned SLEEP_TIME_MS = 500;
 
 protected:
+    std::string worldPrefix;
     SyncTree world;
     Rectangle responsibleArea;
     SyncTree* ownSubtree;

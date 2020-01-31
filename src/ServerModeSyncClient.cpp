@@ -66,13 +66,20 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
     while (this->isRunning) {
 
         // Construct name and issue Interest
-        ndn::Name subtreeRequestName("/just/a/name");
+        ndn::Name subtreeName;
+        {
+            std::unique_lock<std::mutex> lck(this->treeAccessMutex);
+            subtreeName = subtree->subtreeToName(true);
+        }
+        ndn::Name subtreeRequestName(worldPrefix);
+        subtreeRequestName.append(subtreeName);
 
         ndn::Interest subtreeRequest(subtreeRequestName);
         subtreeRequest.setMustBeFresh(true);
         subtreeRequest.setCanBePrefix(false);
         subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
 
+        std::cout << "Express Interest for " << subtreeRequestName.toUri() << std::endl;
         this->face.expressInterest(subtreeRequest,
             std::bind(&ServerModeSyncClient::onSubtreeSyncResponseReceived, this, _1, _2),
             std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
