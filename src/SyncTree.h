@@ -15,6 +15,8 @@
 #include <math.h>
 #include <vector>
 
+#include <ndn-cxx/name.hpp>
+
 namespace quadtree {
 
 typedef std::pair<std::map<unsigned, std::vector<size_t>>, int> NextNLevelsResponseType;
@@ -263,6 +265,8 @@ public:
      * @return SyncResponse for request with given hashValue
      */
     SyncResponse prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
+
+    ndn::Name subTreeToName() const;
 
 protected:
     void initChilds();

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(QuadTreeSyncEvaluation)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
+set(CMAKE_CXX_FLAGS "-pedantic -Wall -Werror -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
 
 find_package(PkgConfig REQUIRED)
 
@@ -49,12 +49,15 @@ target_include_directories(SyncTreeTests
         PUBLIC
         ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${NDN_CXX_INCLUDE_DIRS}
         )
 target_link_libraries(SyncTreeTests
         PUBLIC
         Catch2::Catch2
         ${PROTOBUF_LIBRARIES}
-        ${Boost_LIBRARIES})
+        ${Boost_LIBRARIES}
+        ${NDN_CXX_LIBRARIES}
+        )
 
 add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/QuadTreeStructs.h

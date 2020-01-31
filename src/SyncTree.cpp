@@ -517,7 +517,7 @@ SyncResponse SyncTree::prepareSyncResponse(const size_t hashValue, unsigned lowe
     syncResponse.set_hashknown(storedChanges.first == hashValue);
 
     if (response.containsChanges) {
-        for (const auto& chunk: response.changeReponse.second) {
+        for (const auto& chunk : response.changeReponse.second) {
             quadtree::ChunkData protoChunk;
             protoChunk.set_data(chunk->data);
             protoChunk.set_x(chunk->pos.x);
@@ -535,5 +535,29 @@ SyncResponse SyncTree::prepareSyncResponse(const size_t hashValue, unsigned lowe
     }
     return syncResponse;
 }
+ndn::Name SyncTree::subTreeToName() const
+{
+    ndn::Name subtreeName;
+    std::vector<unsigned> nameComponents;
 
+    // Go up the tree to the root
+    SyncTree* currentParent = this->parent;
+    while (currentParent != nullptr) {
+        for (unsigned i = 0; i < currentParent->childs.size(); i++) {
+            SyncTree* child = currentParent->childs[i];
+            if (child != nullptr && this->area.isOverlapping(child->area)) {
+                nameComponents.insert(nameComponents.begin(), i);
+                break;
+            }
+        }
+        currentParent = currentParent->parent;
+    }
+
+    // Create name from name components
+    for (const auto& component : nameComponents) {
+        subtreeName.append(std::to_string(component));
+    }
+
+    return subtreeName;
+}
 }
