@@ -36,6 +36,19 @@ public:
         , initialRequestLevel(initialRequestLevel)
         , changesOverTime(std::move(changesOverTime))
     {
+
+        // Inflate all subtrees on the initial request level
+        for (int i = 0; i < pow(4, initialRequestLevel); i++) {
+            world.inflateSubtree(initialRequestLevel + 1, i);
+        }
+
+        ownSubtree = world.getSubtree(responsibleArea);
+        auto requestableTrees = world.enumerateLowerLevel(initialRequestLevel);
+        for (const auto& subtree : requestableTrees) {
+            if (subtree != nullptr && subtree != ownSubtree) {
+                remoteSyncTrees.push_back(subtree);
+            }
+        }
     }
 
 public:
@@ -46,19 +59,41 @@ public:
 protected:
     void applyChangesOverTime();
 
+    void synchronizeRemoteRegion(SyncTree* subtree);
+
+    // NDN Consumer Methods
+    void onSubtreeSyncResponseReceived(const ndn::Interest&, const ndn::Data& data);
+
+    void onNack(const ndn::Interest&, const ndn::lp::Nack& nack);
+
+    void onTimeout(const ndn::Interest& interest);
+
+    // NDN Producer Methods
+    void onSubtreeSyncRequestReceived(const ndn::InterestFilter&, const ndn::Interest& interest);
+
+    void onRegisterFailed(const ndn::Name& prefix, const std::string& reason);
+
+public:
+    const unsigned SLEEP_TIME_MS = 500;
+
 protected:
     SyncTree world;
     Rectangle responsibleArea;
+    SyncTree* ownSubtree;
+    std::vector<SyncTree*> remoteSyncTrees;
     unsigned initialRequestLevel;
 
     ndn::Face face;
+    ndn::KeyChain keyChain;
 
     std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime;
 
     std::atomic<bool> isRunning = true;
     std::thread publisherThread;
+    std::vector<std::thread> consumerthreads;
     std::atomic<unsigned> currentTick = 0;
     std::mutex treeAccessMutex;
+    std::mutex keyChainMutex;
 };
 
 }

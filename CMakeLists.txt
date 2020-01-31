@@ -4,6 +4,8 @@ project(QuadTreeSyncEvaluation)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
 
+find_package(PkgConfig REQUIRED)
+
 # Check if Catch2 (Lib for tests) is installed
 find_package(Catch2 REQUIRED)
 
@@ -11,14 +13,12 @@ find_package(Catch2 REQUIRED)
 find_package(Protobuf REQUIRED)
 
 # Check if NDN-CXX is installed
-INCLUDE(FindPkgConfig)
-pkg_check_modules(NDN_CXX libndn-cxx)
-include_directories(${NDN_CXX_INCLUDE_DIRS})
-
+pkg_check_modules(NDN_CXX REQUIRED libndn-cxx)
+#include_directories(${NDN_CXX_INCLUDE_DIRS})
 
 # Check if Boost and all components are installed
 FIND_PACKAGE(Boost 1.65 COMPONENTS system thread program_options filesystem iostreams REQUIRED)
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+#INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
 
 
 add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
@@ -62,13 +62,24 @@ add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
         src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
-target_include_directories(EvaluationSyncClient
-        PUBLIC
-        ${PROTOBUF_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        )
 target_link_libraries(EvaluationSyncClient
         PUBLIC
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES}
-        ${NDN_CXX_LIBRARIES})
+        ${NDN_CXX_LIBRARIES}
+        )
+target_include_directories(EvaluationSyncClient
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${NDN_CXX_INCLUDE_DIRS}
+        )
+
+add_executable(Testclient src/Testclient.cpp)
+target_link_libraries(Testclient
+        PUBLIC
+        ${NDN_CXX_LIBRARIES}
+        )
+target_include_directories(EvaluationSyncClient
+        PUBLIC
+        )
