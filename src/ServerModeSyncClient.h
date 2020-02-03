@@ -14,6 +14,7 @@
 
 #include <ndn-cxx/face.hpp>
 
+#include "ChunkLogger.h"
 #include "SyncTree.h"
 #include "zip/GZip.h"
 
@@ -29,13 +30,15 @@ namespace quadtree {
 class ServerModeSyncClient {
 
 public:
-    ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea, unsigned initialRequestLevel,
-        std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime)
+    ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea,
+        unsigned initialRequestLevel, std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime,
+        std::string logfilename)
         : worldPrefix(std::move(worldPrefix))
         , world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
         , initialRequestLevel(initialRequestLevel)
         , changesOverTime(std::move(changesOverTime))
+        , logger(logfilename)
     {
 
         // Inflate all subtrees on the initial request level
@@ -89,6 +92,8 @@ protected:
     ndn::KeyChain keyChain;
 
     std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime;
+
+    ChunkLogger logger;
 
     std::atomic<bool> isRunning = true;
     std::thread publisherThread;

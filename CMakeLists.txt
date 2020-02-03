@@ -64,6 +64,7 @@ add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/SyncTree.cpp src/SyncTree.h
         src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
+        src/ChunkLogger.h src/ChunkLogger.cpp
         src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
 target_link_libraries(EvaluationSyncClient
         PUBLIC

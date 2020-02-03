@@ -13,8 +13,8 @@
 #include <boost/functional/hash.hpp>
 #include <map>
 #include <math.h>
-#include <vector>
 #include <regex>
+#include <vector>
 
 #include <ndn-cxx/name.hpp>
 
@@ -265,11 +265,11 @@ public:
      * is sent
      * @return SyncResponse for request with given hashValue
      */
-    SyncResponse prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
+    SyncResponse prepareSyncResponse(size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
 
-    ndn::Name subtreeToName(bool includeSubtreeHash=false) const;
+    ndn::Name subtreeToName(bool includeSubtreeHash = false) const;
 
-    SyncTree* getSubtreeFromName(ndn::Name subtreeName) const;
+    SyncTree* getSubtreeFromName(const ndn::Name& subtreeName) const;
 
 protected:
     void initChilds();

@@ -7,12 +7,13 @@
 void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changedPoint)
 {
     if (responsibleArea.isPointInRectangle(changedPoint)) {
-        // Todo: Log time when change was published
-        world.change(changedPoint.x, changedPoint.y);
-        std::cout << "Changed " << changedPoint.x << "," << changedPoint.y << std::endl;
-    } else {
-        std::cout << "OutOfRange " << changedPoint.x << "," << changedPoint.y << std::endl;
+        const Chunk& chunk(*world.change(changedPoint.x, changedPoint.y));
+        logger.logChunkUpdateProduced(chunk);
+        //        std::cout << "Changed " << changedPoint.x << "," << changedPoint.y << std::endl;
     }
+    //    } else {
+    //        std::cout << "OutOfRange " << changedPoint.x << "," << changedPoint.y << std::endl;
+    //    }
 }
 
 void quadtree::ServerModeSyncClient::startSynchronization()
@@ -48,7 +49,6 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
             }
             this->world.reHash();
         }
-        std::cout << std::endl;
 
         std::this_thread::sleep_until(nextChangePublication);
         nextChangePublication += std::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS);
@@ -106,16 +106,24 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
 
     if (response.chunkdata()) {
         // If the response contains chunks, log when the change arrived
-        // Todo: Log when chunk change arrived
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        for (const auto& chunk : response.chunks()) {
+            Chunk c;
+            c.pos.x = chunk.x();
+            c.pos.y = chunk.y();
+            c.data = chunk.data();
+            logger.logChunkUpdateReceived(c, millis);
+        }
     }
 
     {
         std::unique_lock<std::mutex> lck(this->treeAccessMutex);
         // Todo get subtree corresonding to ndn::Name
-        SyncTree* subtree;
+        SyncTree* subtree = world.getSubtreeFromName(data.getFullName());
         subtree->applySyncResponse(response);
     }
-
 
     // Todo: Decode changes and apply to sync tree
     std::cout << "Received Data " << data << std::endl;

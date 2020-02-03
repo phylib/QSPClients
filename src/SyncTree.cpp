@@ -507,7 +507,7 @@ std::pair<bool, std::vector<SyncTree*>> SyncTree::applySyncResponse(const SyncRe
     }
 }
 
-SyncResponse SyncTree::prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold)
+SyncResponse SyncTree::prepareSyncResponse(size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold)
 {
     SyncRequestResponse response = syncRequest(hashValue, lowerLevels, chunkThreshold);
 
@@ -565,22 +565,29 @@ ndn::Name SyncTree::subtreeToName(bool includeSubtreeHash) const
 
     return subtreeName;
 }
-SyncTree* SyncTree::getSubtreeFromName(ndn::Name subtreeName) const
+SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName) const
 {
 
     std::regex treeCoord("^[0123]$");
     std::vector<unsigned> nameComponents;
-    for (ndn::Name::Component component : subtreeName) {
+    for (const ndn::Name::Component& component : subtreeName) {
         const std::string& stringComponent = component.toUri();
-        if (stringComponent.compare("h") == 0) {
+        if (stringComponent == "h") {
             break; // Stop parsing at the hash value
         }
         if (std::regex_match(stringComponent, treeCoord)) {
             nameComponents.push_back(std::stoi(stringComponent));
         }
     }
-    unsigned numComponents = nameComponents.size();
 
-    return nullptr;
+    auto* current = const_cast<SyncTree*>(this);
+    for (unsigned direction : nameComponents) {
+        if (childs[direction] == nullptr) {
+            throw std::domain_error("Subtree for name " + subtreeName.toUri() + " not initialized");
+        }
+        current = childs[direction];
+    }
+
+    return current;
 }
 }

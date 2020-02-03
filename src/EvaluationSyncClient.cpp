@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
     // Create Sync Client
     quadtree::Rectangle world(quadtree::Point(0, 0), quadtree::Point(treeSize, treeSize));
     quadtree::Rectangle responsibility(quadtree::Point(treeSize / 2, 0), quadtree::Point(treeSize, treeSize / 2));
-    quadtree::ServerModeSyncClient client("/world", world, responsibility, initialRequestLevel, changesOverTime);
+    quadtree::ServerModeSyncClient client("/world", world, responsibility, initialRequestLevel, changesOverTime, "logs/Testlog.csv");
 
     // Start Sync Client
     client.startSynchronization();
