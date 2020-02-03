@@ -1,3 +1,9 @@
+//
+// Created by phmoll on 1/27/20.
+//
+
+#ifndef QUADTREESYNCEVALUATION_SERVERMODESYNCCLIENT_H
+#define QUADTREESYNCEVALUATION_SERVERMODESYNCCLIENT_H
 
 #include <atomic>
 #include <chrono>
@@ -8,14 +14,8 @@
 
 #include <ndn-cxx/face.hpp>
 
-//
-// Created by phmoll on 1/27/20.
-//
-
-#ifndef QUADTREESYNCEVALUATION_SERVERMODESYNCCLIENT_H
-#define QUADTREESYNCEVALUATION_SERVERMODESYNCCLIENT_H
-
 #include "SyncTree.h"
+#include "zip/GZip.h"
 
 using namespace std::literals;
 

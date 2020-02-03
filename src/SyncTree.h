@@ -14,6 +14,7 @@
 #include <map>
 #include <math.h>
 #include <vector>
+#include <regex>
 
 #include <ndn-cxx/name.hpp>
 
@@ -267,6 +268,8 @@ public:
     SyncResponse prepareSyncResponse(const size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
 
     ndn::Name subtreeToName(bool includeSubtreeHash=false) const;
+
+    SyncTree* getSubtreeFromName(ndn::Name subtreeName) const;
 
 protected:
     void initChilds();

@@ -7,6 +7,7 @@
 void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changedPoint)
 {
     if (responsibleArea.isPointInRectangle(changedPoint)) {
+        // Todo: Log time when change was published
         world.change(changedPoint.x, changedPoint.y);
         std::cout << "Changed " << changedPoint.x << "," << changedPoint.y << std::endl;
     } else {
@@ -92,6 +93,30 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 
 void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::Interest& interest, const ndn::Data& data)
 {
+    // Todo: Verify signature
+
+    // Todo: Decrypt packet
+
+    // unzip und unserialize data
+    char* rawData = (char*)data.getContent().value();
+    std::string receivedData = std::string(rawData, data.getContent().value_size());
+    std::string decompressed = GZip::decompress(receivedData);
+    quadtree::SyncResponse response;
+    response.ParseFromString(decompressed);
+
+    if (response.chunkdata()) {
+        // If the response contains chunks, log when the change arrived
+        // Todo: Log when chunk change arrived
+    }
+
+    {
+        std::unique_lock<std::mutex> lck(this->treeAccessMutex);
+        // Todo get subtree corresonding to ndn::Name
+        SyncTree* subtree;
+        subtree->applySyncResponse(response);
+    }
+
+
     // Todo: Decode changes and apply to sync tree
     std::cout << "Received Data " << data << std::endl;
 }

@@ -826,5 +826,13 @@ TEST_CASE("Test NDN parts of the sync tree")
                 REQUIRE(name.get(name.size() - 2).toUri().compare("h") == 0);
             }
         }
+
+        WHEN("the name /world/0/0/h/12123 is parsed") {
+            ndn::Name name("/world/0/0/h/12123");
+            SyncTree* subtree = syncTree.getSubtreeFromName(name);
+            THEN("the correct subtree should be returned") {
+
+            }
+        }
     }
 }

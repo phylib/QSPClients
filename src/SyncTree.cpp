@@ -565,4 +565,22 @@ ndn::Name SyncTree::subtreeToName(bool includeSubtreeHash) const
 
     return subtreeName;
 }
+SyncTree* SyncTree::getSubtreeFromName(ndn::Name subtreeName) const
+{
+
+    std::regex treeCoord("^[0123]$");
+    std::vector<unsigned> nameComponents;
+    for (ndn::Name::Component component : subtreeName) {
+        const std::string& stringComponent = component.toUri();
+        if (stringComponent.compare("h") == 0) {
+            break; // Stop parsing at the hash value
+        }
+        if (std::regex_match(stringComponent, treeCoord)) {
+            nameComponents.push_back(std::stoi(stringComponent));
+        }
+    }
+    unsigned numComponents = nameComponents.size();
+
+    return nullptr;
+}
 }
