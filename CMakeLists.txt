@@ -34,11 +34,13 @@ target_include_directories(SyncTreeNLevelEval
         PUBLIC
         ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
+        ${NDN_CXX_INCLUDE_DIRS}
         )
 target_link_libraries(SyncTreeNLevelEval
         PUBLIC
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES}
+        ${NDN_CXX_LIBRARIES}
         )
 
 add_executable(SyncTreeTests test/SyncTreeTests.cpp
