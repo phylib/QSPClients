@@ -458,19 +458,48 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
 
     std::pair<bool, std::vector<Chunk*>> changeResponse = getChanges(since);
 
-    if (getLevel() + 1 > getMaxLevel() || nextNLevels <= 1) {
-        syncRequestResponse.changeReponse = changeResponse;
-        syncRequestResponse.containsChanges = true;
+    if (changeResponse.first) { // If the given hash is known
 
-    } else if (!changeResponse.first || changeResponse.second.size() > threshold) {
+        if (getLevel() + 1 > getMaxLevel()
+            || nextNLevels <= 1) { // When we are in the final level, changes need to be returned
+            syncRequestResponse.changeReponse = changeResponse;
+            syncRequestResponse.containsChanges = true;
 
-        NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
-        syncRequestResponse.containsChanges = false;
-        syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
+        } else if (changeResponse.second.size()
+            > threshold) { // Otherwise, if more changes then the threshold, return hashes
+            NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
+            syncRequestResponse.containsChanges = false;
+            syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
+        } else { // Default case, return the changes
+            syncRequestResponse.changeReponse = changeResponse;
+            syncRequestResponse.containsChanges = true;
+        }
 
-    } else {
-        syncRequestResponse.changeReponse = changeResponse;
-        syncRequestResponse.containsChanges = true;
+    } else { // If the given hash is unknown, all chunks need to be enumerated
+
+        unsigned remainingLevels = getMaxLevel() - (getLevel() - 1);
+        unsigned allChunks = pow(pow(2, remainingLevels), 2);
+
+        if (allChunks > threshold) { // If there are more chunks than the threshold, return lower level hashes
+            NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
+            syncRequestResponse.containsChanges = false;
+            syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
+        } else {
+            std::vector<SyncTree*> finalLevels = this->enumerateLowerLevel(remainingLevels - 1);
+            std::vector<Chunk*> chunks;
+            for (SyncTree* treeNode : finalLevels) {
+                if (treeNode != nullptr) {
+                    for (Chunk* chunk : treeNode->data) {
+                        if (chunk != nullptr) {
+                            chunks.push_back(chunk);
+                        }
+                    }
+                }
+            }
+            std::pair<bool, std::vector<Chunk*>> chunkResponse(false, chunks);
+            syncRequestResponse.changeReponse = chunkResponse;
+            syncRequestResponse.containsChanges = true;
+        }
     }
 
     return syncRequestResponse;
@@ -480,10 +509,16 @@ std::pair<bool, std::vector<SyncTree*>> SyncTree::applySyncResponse(const SyncRe
 
     if (syncResponse.chunkdata()) { // Apply chunk changes
 
-        for (const auto& chunk : syncResponse.chunks()) {
-            change(chunk.x(), chunk.y(), chunk.data());
+        // Apply changes on the root
+        SyncTree* root = this;
+        while (root->parent != nullptr) {
+            root = root->parent;
         }
-        this->reHash();
+
+        for (const auto& chunk : syncResponse.chunks()) {
+            root->change(chunk.x(), chunk.y(), chunk.data());
+        }
+        root->reHash();
         const auto messageHash = (size_t)syncResponse.curhash();
         return std::pair<bool, std::vector<SyncTree*>>(messageHash == this->getHash(), std::vector<SyncTree*>());
 
@@ -582,10 +617,10 @@ SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName) const
 
     auto* current = const_cast<SyncTree*>(this);
     for (unsigned direction : nameComponents) {
-        if (childs[direction] == nullptr) {
+        if (current->childs[direction] == nullptr) {
             throw std::domain_error("Subtree for name " + subtreeName.toUri() + " not initialized");
         }
-        current = childs[direction];
+        current = current->childs[direction];
     }
 
     return current;

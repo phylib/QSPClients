@@ -440,25 +440,6 @@ SCENARIO("Test hash functions of the sync tree")
             }
         }
 
-        //        WHEN("every single chunk in the tree changes")
-        //        {
-        //
-        //            // Todo: Disable this test case
-        //
-        //            for (unsigned i = 0; i < treeDimension; i++) {
-        //                for (unsigned j = 0; j < treeDimension; j++) {
-        //                    tree.change(i, j);
-        //                }
-        //            }
-        //            tree.reHash();
-        //
-        //            THEN("The number of changed chunks should be 65536x65536")
-        //            {
-        //                const std::pair<bool, std::vector<Chunk*>>& changes = tree.getChanges(initial_hash);
-        //                REQUIRE(changes.first);
-        //                REQUIRE(changes.second.size() == treeDimension * treeDimension);
-        //            }
-        //        }
     }
 }
 
@@ -772,6 +753,51 @@ TEST_CASE("Correctly create and apply SyncResponse message")
                 REQUIRE(!syncResponse.chunkdata());
                 REQUIRE(syncResponse.hashvalues_size() > 0);
             }
+            THEN("with a large threshold, all chunks should be enumerated")
+            {
+                SyncResponse largeSyncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 65*65);
+                REQUIRE(!largeSyncResponse.hashknown());
+                REQUIRE(largeSyncResponse.chunkdata());
+                REQUIRE(largeSyncResponse.chunks_size() == 5);
+            }
+        }
+
+        WHEN("The original tree has more changes than the threshold and changes from subtrees are requested")
+        {
+            // Make 12 changes in different subtrees
+            originalTree.change(0, 0);
+            originalTree.change(1, 1);
+            originalTree.change(2, 1);
+            originalTree.change(40, 0);
+            originalTree.change(40, 1);
+            originalTree.change(41, 1);
+            originalTree.change(0, 40);
+            originalTree.change(1, 40);
+            originalTree.change(2, 40);
+            originalTree.change(40, 41);
+            originalTree.change(41, 41);
+            originalTree.change(42, 42);
+
+            originalTree.reHash();
+
+            SyncResponse syncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 2, 10);
+            REQUIRE(!syncResponse.chunkdata());
+            REQUIRE(syncResponse.hashvalues_size() == 4);
+
+            auto applyResult = clonedTree.applySyncResponse(syncResponse);
+            REQUIRE(applyResult.second.size() == 4);
+
+            THEN("none of the subtree requests should contain hash values and the tree should be synced after applying all") {
+
+                for (SyncTree* subtreeCloned : applyResult.second) {
+                    SyncTree* subtreeOriginal(originalTree.getSubtreeFromName(subtreeCloned->subtreeToName()));
+                    auto subtreeResponse = subtreeOriginal->prepareSyncResponse(subtreeCloned->getHash(), 2, 10);
+                    auto subtreeApplyResult = subtreeCloned->applySyncResponse(subtreeResponse);
+                    REQUIRE(subtreeApplyResult.first);
+                }
+                clonedTree.reHash();
+                REQUIRE(clonedTree.getHash() == originalTree.getHash());
+            }
         }
     }
 }
@@ -828,10 +854,13 @@ TEST_CASE("Test NDN parts of the sync tree")
         }
 
         WHEN("the name /world/0/0/h/12123 is parsed") {
+            syncTree.change(0, 0);
+            Rectangle correctRect(Point(0,0), Point(16,16));
+            SyncTree* correctSubtree = syncTree.getSubtree(correctRect);
             ndn::Name name("/world/0/0/h/12123");
-            SyncTree* subtree = syncTree.getSubtreeFromName(name);
             THEN("the correct subtree should be returned") {
-
+                SyncTree* subtree = syncTree.getSubtreeFromName(name);
+                REQUIRE(subtree == correctSubtree);
             }
         }
     }
