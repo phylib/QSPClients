@@ -3,6 +3,7 @@
 //
 #include <chrono>
 #include <thread>
+#include "spdlog/spdlog.h"
 
 #include "ServerModeSyncClient.h"
 #include "csv/CSVReader.h"
@@ -78,6 +79,7 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTi
 
 int main(int argc, char* argv[])
 {
+    spdlog::set_level(spdlog::level::trace);
 
     if (argc != 2) {
         std::cout << "Usage: " << argv[0] << " serverNum" << std::endl;

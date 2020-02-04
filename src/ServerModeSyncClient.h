@@ -13,6 +13,7 @@
 #include <utility>
 
 #include <ndn-cxx/face.hpp>
+#include "spdlog/spdlog.h"
 
 #include "ChunkLogger.h"
 #include "SyncTree.h"
@@ -42,6 +43,8 @@ public:
         , changesOverTime(std::move(changesOverTime))
         , logger(logfilename)
     {
+
+        spdlog::info("Initialize ServerModeSyncClient");
 
         // Inflate all subtrees on the initial request level
         for (int i = 0; i < pow(4, initialRequestLevel); i++) {

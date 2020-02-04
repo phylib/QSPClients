@@ -18,6 +18,7 @@ void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changed
 
 void quadtree::ServerModeSyncClient::startSynchronization()
 {
+
     // This thread applies changes from CSV file, NOT the producer
     this->publisherThread = std::thread(&ServerModeSyncClient::applyChangesOverTime, this);
 
@@ -25,7 +26,6 @@ void quadtree::ServerModeSyncClient::startSynchronization()
     ndn::Name ownRegionName(worldPrefix);
     ndn::Name subtreeName = this->ownSubtree->subtreeToName();
     ownRegionName.append(subtreeName);
-    std::cout << ownRegionName.toUri() << std::endl;
     this->face.setInterestFilter(ownRegionName,
         std::bind(&ServerModeSyncClient::onSubtreeSyncRequestReceived, this, _1, _2),
         ndn::RegisterPrefixSuccessCallback(), std::bind(&ServerModeSyncClient::onRegisterFailed, this, _1, _2));
@@ -35,6 +35,8 @@ void quadtree::ServerModeSyncClient::startSynchronization()
         std::thread consumerThread = std::thread(&ServerModeSyncClient::synchronizeRemoteRegion, this, remoteRegion);
         this->consumerthreads.push_back(std::move(consumerThread));
     }
+
+    spdlog::info("ServerModeSyncClient Started -- Zone:" + ownRegionName.toUri());
 
     // This method should be blocking -- calling Face.processEvents
     while (this->isRunning) {
@@ -87,10 +89,10 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 
         ndn::Interest subtreeRequest(subtreeRequestName);
         subtreeRequest.setMustBeFresh(true);
-//        subtreeRequest.setCanBePrefix(false);
+        //        subtreeRequest.setCanBePrefix(false);
         subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
 
-        std::cout << "Express Interest for " << subtreeRequestName.toUri() << std::endl;
+        spdlog::debug("Express Interest for " + subtreeRequestName.toUri());
         this->face.expressInterest(subtreeRequest,
             std::bind(&ServerModeSyncClient::onSubtreeSyncResponseReceived, this, _1, _2),
             std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
@@ -103,6 +105,8 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 
 void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::Interest& interest, const ndn::Data& data)
 {
+
+    spdlog::debug("Received sync update: " + interest.getName().toUri());
     // Todo: Verify signature
 
     // Todo: Decrypt packet
@@ -114,9 +118,8 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
     quadtree::SyncResponse response;
     response.ParseFromString(decompressed);
 
-    std::cout << "Received update " << response.chunkdata() << std::endl;
-
     if (response.chunkdata()) {
+        spdlog::trace("Sync Update contains chunk data");
         // If the response contains chunks, log when the change arrived
         auto now = std::chrono::system_clock::now();
         auto duration = now.time_since_epoch();
@@ -128,13 +131,16 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
             c.data = chunk.data();
             logger.logChunkUpdateReceived(c, millis);
         }
+    } else {
+        spdlog::trace("Sync Update contains subtree hashes. HashKnown=" + std::to_string(response.has_chunkdata()));
     }
 
+    // Apply the sync response to the local sync tree
+    std::pair<bool, std::vector<SyncTree*>> applyResult;
     {
         std::unique_lock<std::mutex> lck(this->treeAccessMutex);
-        // Todo get subtree corresonding to ndn::Name
         SyncTree* subtree = world.getSubtreeFromName(data.getFullName());
-        subtree->applySyncResponse(response);
+        applyResult = subtree->applySyncResponse(response);
     }
 }
 
@@ -142,20 +148,20 @@ void quadtree::ServerModeSyncClient::onNack(const ndn::Interest& interest, const
 {
     // Todo: How to handle NACKs?
 
-    std::cout << "Received Nack with reason " << nack.getReason() << " for " << interest << std::endl;
+    spdlog::debug("Received Nack for " + interest.getName().toUri());
 }
 
 void quadtree::ServerModeSyncClient::onTimeout(const ndn::Interest& interest)
 {
     // Todo: How to handle Timeouts?
 
-    std::cout << "Timeout for " << interest << std::endl;
+    spdlog::debug("Timeout for " + interest.getName().toUri());
 }
 
 void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     const ndn::InterestFilter&, const ndn::Interest& interest)
 {
-    std::cout << "Received Interest " << interest << std::endl;
+    spdlog::debug("Received Interest " + interest.getName().toUri());
     const ndn::Name& subtreeName(interest.getName());
     SyncTree* syncTree = world.getSubtreeFromName(subtreeName);
 
@@ -170,7 +176,7 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     // Todo: Encrypt response
 
     // Create Data packet
-//    auto data = std::make_shared<ndn::Data>(interest.getName());
+    //    auto data = std::make_shared<ndn::Data>(interest.getName());
     ndn::Data data = ndn::Data();
     data.setName(subtreeName);
     data.setFreshnessPeriod(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
@@ -186,7 +192,6 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
 
 void quadtree::ServerModeSyncClient::onRegisterFailed(const ndn::Name& prefix, const std::string& reason)
 {
-    std::cerr << "ERROR: Failed to register prefix '" << prefix << "' with the local forwarder (" << reason << ")"
-              << std::endl;
+    spdlog::error("ERROR: Failed to register prefix '" + prefix.toUri() + "' with the local forwarder");
     this->face.shutdown();
 }

@@ -18,7 +18,8 @@ pkg_check_modules(NDN_CXX REQUIRED libndn-cxx)
 
 # Check if Boost and all components are installed
 FIND_PACKAGE(Boost 1.65 COMPONENTS system thread program_options filesystem iostreams REQUIRED)
-#INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIR})
+
+find_package(spdlog REQUIRED)
 
 
 add_executable(SyncTreeNLevelEval src/SyncTreeNLevelEvaluation.cpp
@@ -41,6 +42,7 @@ target_link_libraries(SyncTreeNLevelEval
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES}
         ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
         )
 
 add_executable(SyncTreeTests test/SyncTreeTests.cpp
@@ -59,6 +61,7 @@ target_link_libraries(SyncTreeTests
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES}
         ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
         )
 
 add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
@@ -73,6 +76,7 @@ target_link_libraries(EvaluationSyncClient
         ${PROTOBUF_LIBRARIES}
         ${Boost_LIBRARIES}
         ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
         )
 target_include_directories(EvaluationSyncClient
         PUBLIC
@@ -85,6 +89,7 @@ add_executable(Testclient src/Testclient.cpp)
 target_link_libraries(Testclient
         PUBLIC
         ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
         )
 target_include_directories(Testclient
         PUBLIC
