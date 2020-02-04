@@ -267,8 +267,20 @@ public:
      */
     SyncResponse prepareSyncResponse(size_t hashValue, unsigned lowerLevels, unsigned chunkThreshold);
 
+    /**
+     * Returns a name representing the path to the current subtree. When includeSubtreeHash is true, then a name
+     * component representing the hash is included.
+     * @param includeSubtreeHash Include name components representing the current hash of the subtree
+     * @return The path to the subtree as ndn::Name
+     */
     ndn::Name subtreeToName(bool includeSubtreeHash = false) const;
 
+    /**
+     * Returns the subtree of the synctree, which is identified by the given NDN name. If the subtree is not inflated
+     * yet, an exception is thrown.
+     * @param subtreeName ndn::Name of the subtree to return
+     * @return The corresponding subtree
+     */
     SyncTree* getSubtreeFromName(const ndn::Name& subtreeName) const;
 
 protected:
