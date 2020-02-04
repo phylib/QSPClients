@@ -32,11 +32,13 @@ class ServerModeSyncClient {
 public:
     ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea,
         unsigned initialRequestLevel, std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime,
-        std::string logfilename)
+        std::string logfilename, unsigned lowerLevels = 2, unsigned chunkThreshold = 200)
         : worldPrefix(std::move(worldPrefix))
         , world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
         , initialRequestLevel(initialRequestLevel)
+        , lowerLevels(lowerLevels)
+        , chunkThreshold(chunkThreshold)
         , changesOverTime(std::move(changesOverTime))
         , logger(logfilename)
     {
@@ -87,6 +89,8 @@ protected:
     SyncTree* ownSubtree;
     std::vector<SyncTree*> remoteSyncTrees;
     unsigned initialRequestLevel;
+    unsigned lowerLevels;
+    unsigned chunkThreshold;
 
     ndn::Face face;
     ndn::KeyChain keyChain;

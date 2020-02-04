@@ -86,6 +86,7 @@ target_link_libraries(Testclient
         PUBLIC
         ${NDN_CXX_LIBRARIES}
         )
-target_include_directories(EvaluationSyncClient
+target_include_directories(Testclient
         PUBLIC
+        ${NDN_CXX_INCLUDE_DIRS}
         )

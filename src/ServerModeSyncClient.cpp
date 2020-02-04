@@ -18,7 +18,17 @@ void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changed
 
 void quadtree::ServerModeSyncClient::startSynchronization()
 {
+    // This thread applies changes from CSV file, NOT the producer
     this->publisherThread = std::thread(&ServerModeSyncClient::applyChangesOverTime, this);
+
+    // Producer listening to requests from subtree
+    ndn::Name ownRegionName(worldPrefix);
+    ndn::Name subtreeName = this->ownSubtree->subtreeToName();
+    ownRegionName.append(subtreeName);
+    std::cout << ownRegionName.toUri() << std::endl;
+    this->face.setInterestFilter(ownRegionName,
+        std::bind(&ServerModeSyncClient::onSubtreeSyncRequestReceived, this, _1, _2),
+        ndn::RegisterPrefixSuccessCallback(), std::bind(&ServerModeSyncClient::onRegisterFailed, this, _1, _2));
 
     // Start process which requests changes from remote servers
     for (SyncTree* remoteRegion : this->remoteSyncTrees) {
@@ -77,7 +87,7 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 
         ndn::Interest subtreeRequest(subtreeRequestName);
         subtreeRequest.setMustBeFresh(true);
-        subtreeRequest.setCanBePrefix(false);
+//        subtreeRequest.setCanBePrefix(false);
         subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
 
         std::cout << "Express Interest for " << subtreeRequestName.toUri() << std::endl;
@@ -104,6 +114,8 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
     quadtree::SyncResponse response;
     response.ParseFromString(decompressed);
 
+    std::cout << "Received update " << response.chunkdata() << std::endl;
+
     if (response.chunkdata()) {
         // If the response contains chunks, log when the change arrived
         auto now = std::chrono::system_clock::now();
@@ -124,9 +136,6 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
         SyncTree* subtree = world.getSubtreeFromName(data.getFullName());
         subtree->applySyncResponse(response);
     }
-
-    // Todo: Decode changes and apply to sync tree
-    std::cout << "Received Data " << data << std::endl;
 }
 
 void quadtree::ServerModeSyncClient::onNack(const ndn::Interest& interest, const ndn::lp::Nack& nack)
@@ -146,7 +155,33 @@ void quadtree::ServerModeSyncClient::onTimeout(const ndn::Interest& interest)
 void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     const ndn::InterestFilter&, const ndn::Interest& interest)
 {
-    // Todo: Decode request and build data packet
+    std::cout << "Received Interest " << interest << std::endl;
+    const ndn::Name& subtreeName(interest.getName());
+    SyncTree* syncTree = world.getSubtreeFromName(subtreeName);
+
+    size_t hash = 0;
+    if (subtreeName.get(subtreeName.size() - 2).toUri() == "h") {
+        hash = subtreeName.get(subtreeName.size() - 1).toNumber();
+    }
+    const SyncResponse& syncResponse = syncTree->prepareSyncResponse(hash, this->lowerLevels, this->chunkThreshold);
+    std::string plain = syncResponse.SerializeAsString();
+    std::string compressed = GZip::compress(plain);
+
+    // Todo: Encrypt response
+
+    // Create Data packet
+//    auto data = std::make_shared<ndn::Data>(interest.getName());
+    ndn::Data data = ndn::Data();
+    data.setName(subtreeName);
+    data.setFreshnessPeriod(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
+    data.setContent(reinterpret_cast<const uint8_t*>(compressed.data()), compressed.size());
+
+    // Todo: Sign response with proper cert
+    {
+        std::unique_lock<std::mutex> lck(this->keyChainMutex);
+        this->keyChain.sign(data);
+    }
+    face.put(data);
 }
 
 void quadtree::ServerModeSyncClient::onRegisterFailed(const ndn::Name& prefix, const std::string& reason)

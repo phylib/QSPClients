@@ -78,6 +78,13 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTi
 
 int main(int argc, char* argv[])
 {
+
+    if (argc != 2) {
+        std::cout << "Usage: " << argv[0] << " serverNum" << std::endl;
+        exit(-1);
+    }
+    unsigned servernum = std::stoi(argv[1]);
+
     unsigned treeSize = 65536;
     unsigned initialRequestLevel = 1;
 
@@ -87,9 +94,27 @@ int main(int argc, char* argv[])
 
     // Create Sync Client
     quadtree::Rectangle world(quadtree::Point(0, 0), quadtree::Point(treeSize, treeSize));
-    quadtree::Rectangle responsibility(quadtree::Point(treeSize / 2, 0), quadtree::Point(treeSize, treeSize / 2));
-    quadtree::ServerModeSyncClient client("/world", world, responsibility, initialRequestLevel, changesOverTime, "logs/Testlog.csv");
+    quadtree::Rectangle responsibility(quadtree::Point(0, 0), quadtree::Point(treeSize / 2, treeSize / 2));
+
+    if (servernum == 0) {
+        responsibility = quadtree::Rectangle(quadtree::Point(0, 0), quadtree::Point(treeSize / 2, treeSize / 2));
+    } else if (servernum == 1) {
+        responsibility = quadtree::Rectangle(quadtree::Point(treeSize / 2, 0), quadtree::Point(treeSize, treeSize / 2));
+    } else if (servernum == 2) {
+        responsibility = quadtree::Rectangle(quadtree::Point(0, treeSize / 2), quadtree::Point(treeSize / 2, treeSize));
+    } else if (servernum == 3) {
+        responsibility
+            = quadtree::Rectangle(quadtree::Point(treeSize / 2, treeSize / 2), quadtree::Point(treeSize, treeSize));
+    }
+
+    quadtree::ServerModeSyncClient client("/world", world, responsibility, initialRequestLevel, changesOverTime,
+        "logs/Testlog_" + std::to_string(servernum) + ".csv");
 
     // Start Sync Client
-    client.startSynchronization();
+    try {
+        client.startSynchronization();
+    } catch (const std::exception& e) {
+        std::cerr << "ERROR: " << e.what() << std::endl;
+        return 1;
+    }
 }
