@@ -132,7 +132,7 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
             logger.logChunkUpdateReceived(c, millis);
         }
     } else {
-        spdlog::trace("Sync Update contains subtree hashes. HashKnown=" + std::to_string(response.has_chunkdata()));
+        spdlog::trace("Sync Update contains subtree hashes. HashKnown=" + std::to_string(response.hashknown()));
     }
 
     // Apply the sync response to the local sync tree
@@ -141,6 +141,36 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
         std::unique_lock<std::mutex> lck(this->treeAccessMutex);
         SyncTree* subtree = world.getSubtreeFromName(data.getFullName());
         applyResult = subtree->applySyncResponse(response);
+    }
+
+    // If subtrees need to be fetched, issue Interests for Subtrees
+    if (!applyResult.second.empty()) {
+
+        spdlog::trace(std::to_string(applyResult.second.size()) + " subtreerequests required");
+        for (SyncTree* subtree : applyResult.second) {
+            ndn::Name subtreeRequestName = ndn::Name(worldPrefix);
+            {
+                std::unique_lock<std::mutex> lck(this->treeAccessMutex);
+                ndn::Name subtreeName(subtree->subtreeToName(true));
+                subtreeRequestName.append(subtreeName);
+            }
+            ndn::Interest subtreeRequest(subtreeRequestName);
+            subtreeRequest.setMustBeFresh(true);
+            //        subtreeRequest.setCanBePrefix(false);
+            subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
+
+            spdlog::trace("Express Interest for Subtreerequest " + subtreeRequestName.toUri());
+            this->face.expressInterest(subtreeRequest,
+                                       std::bind(&ServerModeSyncClient::onSubtreeSyncResponseReceived, this, _1, _2),
+                                       std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
+                                       std::bind(&ServerModeSyncClient::onTimeout, this, _1));
+        }
+
+    } else if (applyResult.first) { // Else, the tree is in sync
+        spdlog::trace("Subtree " + interest.getName().toUri() + " is in sync");
+    } else {
+        spdlog::error("Subtree " + interest.getName().toUri() + " is not in sync after chunkUpdate, eliminate");
+        exit(-1);
     }
 }
 
