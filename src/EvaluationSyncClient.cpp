@@ -1,14 +1,16 @@
 //
 // Created by phmoll on 1/27/20.
 //
+#include "spdlog/spdlog.h"
+#include <boost/program_options.hpp>
 #include <chrono>
 #include <thread>
-#include "spdlog/spdlog.h"
 
 #include "ServerModeSyncClient.h"
 #include "csv/CSVReader.h"
 
 using namespace std::literals;
+namespace po = boost::program_options;
 
 std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTime(
     const std::string& fname, unsigned treeSize)
@@ -77,20 +79,62 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTi
     return changesPerTick;
 }
 
+void storeParameters(
+    std::string logDir, int serverId, int treeSize, int requestLevel, std::string traceFile, std::string prefix)
+{
+    std::ofstream logfile = std::ofstream(logDir + "/SyncClientSettings.txt");
+    logfile << "[Parameters]" << std::endl;
+    logfile << "logDir:\t" << logDir << std::endl;
+    logfile << "serverId:\t" << serverId << std::endl;
+    logfile << "treeSize:\t" << treeSize << std::endl;
+    logfile << "requestLevel:\t" << requestLevel << std::endl;
+    logfile << "traceFile:\t" << traceFile << std::endl;
+    logfile << "prefix:\t" << prefix << std::endl;
+    logfile.flush();
+    logfile.close();
+}
+
 int main(int argc, char* argv[])
 {
     spdlog::set_level(spdlog::level::trace);
 
-    if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " serverNum" << std::endl;
+    po::options_description desc("Usage");
+    int opt;
+    desc.add_options()("help", "produce help message")(
+        "serverId", po::value<int>(), "set the id of the current server")(
+        "treeSize", po::value<int>(&opt)->default_value(65536), "set the id of the current server")(
+        "requestLevel", po::value<int>(&opt)->default_value(1), "In which level of the quadtree are requests sent")(
+        "logDir", po::value<std::string>()->default_value("logs"), "Directory where log output is stored")("traceFile",
+        po::value<std::string>()->default_value(
+            "../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"),
+        "File where chunk changes are located")(
+        "prefix", po::value<std::string>()->default_value("/world"), "Application specific prefix");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << desc << std::endl;
+        return 0;
+    }
+
+    unsigned servernum = 0;
+    if (vm.count("serverId")) {
+        servernum = vm["serverId"].as<int>();
+    } else {
+        std::cout << desc << std::endl;
         exit(-1);
     }
-    unsigned servernum = std::stoi(argv[1]);
 
-    unsigned treeSize = 65536;
-    unsigned initialRequestLevel = 1;
+    unsigned treeSize = vm["treeSize"].as<int>();
+    unsigned initialRequestLevel = vm["requestLevel"].as<int>();
+    std::string logDir = vm["logDir"].as<std::string>();
+    std::string traceFile = vm["traceFile"].as<std::string>();
+    std::string prefix = vm["prefix"].as<std::string>();
 
-    std::string traceFile = "../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv";
+    storeParameters(logDir, servernum, treeSize, initialRequestLevel, traceFile, prefix);
+
     // Parse CSV File
     auto changesOverTime = readChangesOverTime(traceFile, treeSize);
 
@@ -109,8 +153,8 @@ int main(int argc, char* argv[])
             = quadtree::Rectangle(quadtree::Point(treeSize / 2, treeSize / 2), quadtree::Point(treeSize, treeSize));
     }
 
-    quadtree::ServerModeSyncClient client("/world", world, responsibility, initialRequestLevel, changesOverTime,
-        "logs/Testlog_" + std::to_string(servernum) + ".csv");
+    quadtree::ServerModeSyncClient client(prefix, world, responsibility, initialRequestLevel, changesOverTime,
+        logDir + "/Testlog_" + std::to_string(servernum) + ".csv");
 
     // Start Sync Client
     try {

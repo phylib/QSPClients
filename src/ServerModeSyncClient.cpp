@@ -9,11 +9,7 @@ void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changed
     if (responsibleArea.isPointInRectangle(changedPoint)) {
         const Chunk& chunk(*world.change(changedPoint.x, changedPoint.y));
         logger.logChunkUpdateProduced(chunk);
-        //        std::cout << "Changed " << changedPoint.x << "," << changedPoint.y << std::endl;
     }
-    //    } else {
-    //        std::cout << "OutOfRange " << changedPoint.x << "," << changedPoint.y << std::endl;
-    //    }
 }
 
 void quadtree::ServerModeSyncClient::startSynchronization()
@@ -52,6 +48,7 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
     for (unsigned i = 0; i < this->changesOverTime.size(); i++) {
         auto tickChunkPair = this->changesOverTime[i];
         this->currentTick = tickChunkPair.first;
+        spdlog::info("Apply changes of tick " + std::to_string(this->currentTick));
 
         {
             std::unique_lock<std::mutex> lck(this->treeAccessMutex);
@@ -65,10 +62,12 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
         std::this_thread::sleep_until(nextChangePublication);
         nextChangePublication += std::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS);
     }
+    spdlog::info("All changes applied, killing application");
 
     // Close application when trace ended
     this->isRunning = false;
     this->face.shutdown();
+    exit(0);
 }
 
 void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree* subtree)
