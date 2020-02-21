@@ -2,6 +2,7 @@
 // Created by phmoll on 1/27/20.
 //
 #include "spdlog/spdlog.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <thread>
@@ -79,13 +80,13 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTi
     return changesPerTick;
 }
 
-void storeParameters(
-    std::string logDir, int serverId, int treeSize, int requestLevel, std::string traceFile, std::string prefix)
+void storeParameters(std::string logDir, std::string responsibilityArea, int treeSize, int requestLevel,
+    std::string traceFile, std::string prefix)
 {
     std::ofstream logfile = std::ofstream(logDir + "/SyncClientSettings.txt");
     logfile << "[Parameters]" << std::endl;
     logfile << "logDir:\t" << logDir << std::endl;
-    logfile << "serverId:\t" << serverId << std::endl;
+    logfile << "responsiblityArea:\t" << responsibilityArea << std::endl;
     logfile << "treeSize:\t" << treeSize << std::endl;
     logfile << "requestLevel:\t" << requestLevel << std::endl;
     logfile << "traceFile:\t" << traceFile << std::endl;
@@ -100,8 +101,8 @@ int main(int argc, char* argv[])
 
     po::options_description desc("Usage");
     int opt;
-    desc.add_options()("help", "produce help message")(
-        "serverId", po::value<int>(), "set the id of the current server")(
+    desc.add_options()("help", "produce help message")("responsiblityArea", po::value<std::string>(),
+        "Set the responsibility area of the server. String in form of x1,y1,x2,y2")(
         "treeSize", po::value<int>(&opt)->default_value(65536), "set the id of the current server")(
         "requestLevel", po::value<int>(&opt)->default_value(1), "In which level of the quadtree are requests sent")(
         "logDir", po::value<std::string>()->default_value("logs"), "Directory where log output is stored")("traceFile",
@@ -119,10 +120,18 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    unsigned servernum = 0;
-    if (vm.count("serverId")) {
-        servernum = vm["serverId"].as<int>();
+    std::string responsibilityAreaString;
+    if (vm.count("responsiblityArea")) {
+        responsibilityAreaString = vm["responsiblityArea"].as<std::string>();
     } else {
+        std::cout << desc << std::endl;
+        exit(-1);
+    }
+    // Parse responsiblityCoordinates
+    std::vector<std::string> coordinates;
+    boost::split(coordinates, responsibilityAreaString, boost::is_any_of(","));
+    if (coordinates.size() != 4) {
+        std::cout << "Invalid responsibility area!" << std::endl;
         std::cout << desc << std::endl;
         exit(-1);
     }
@@ -133,28 +142,18 @@ int main(int argc, char* argv[])
     std::string traceFile = vm["traceFile"].as<std::string>();
     std::string prefix = vm["prefix"].as<std::string>();
 
-    storeParameters(logDir, servernum, treeSize, initialRequestLevel, traceFile, prefix);
+    storeParameters(logDir, responsibilityAreaString, treeSize, initialRequestLevel, traceFile, prefix);
 
     // Parse CSV File
     auto changesOverTime = readChangesOverTime(traceFile, treeSize);
 
     // Create Sync Client
     quadtree::Rectangle world(quadtree::Point(0, 0), quadtree::Point(treeSize, treeSize));
-    quadtree::Rectangle responsibility(quadtree::Point(0, 0), quadtree::Point(treeSize / 2, treeSize / 2));
-
-    if (servernum == 0) {
-        responsibility = quadtree::Rectangle(quadtree::Point(0, 0), quadtree::Point(treeSize / 2, treeSize / 2));
-    } else if (servernum == 1) {
-        responsibility = quadtree::Rectangle(quadtree::Point(treeSize / 2, 0), quadtree::Point(treeSize, treeSize / 2));
-    } else if (servernum == 2) {
-        responsibility = quadtree::Rectangle(quadtree::Point(0, treeSize / 2), quadtree::Point(treeSize / 2, treeSize));
-    } else if (servernum == 3) {
-        responsibility
-            = quadtree::Rectangle(quadtree::Point(treeSize / 2, treeSize / 2), quadtree::Point(treeSize, treeSize));
-    }
+    quadtree::Rectangle responsibility(quadtree::Point(std::stoi(coordinates[0]), std::stoi(coordinates[1])),
+        quadtree::Point(std::stoi(coordinates[2]), std::stoi(coordinates[3])));
 
     quadtree::ServerModeSyncClient client(prefix, world, responsibility, initialRequestLevel, changesOverTime,
-        logDir + "/Testlog_" + std::to_string(servernum) + ".csv");
+        logDir + "/Testlog_" + responsibilityAreaString + ".csv");
 
     // Start Sync Client
     try {
