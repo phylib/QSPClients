@@ -12,6 +12,7 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <mutex>
 
 class ChunkLogger {
 
@@ -39,6 +40,8 @@ protected:
     std::string logfilename;
     std::ofstream logfile;
     std::string sep;
+
+    std::mutex fileMutex;
 };
 
 #endif // QUADTREESYNCEVALUATION_CHUNKLOGGER_H
