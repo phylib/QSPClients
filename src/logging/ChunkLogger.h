@@ -5,7 +5,7 @@
 #ifndef QUADTREESYNCEVALUATION_CHUNKLOGGER_H
 #define QUADTREESYNCEVALUATION_CHUNKLOGGER_H
 
-#include "QuadTreeStructs.h"
+#include "src/QuadTreeStructs.h"
 
 #include <boost/chrono/chrono.hpp>
 
