@@ -15,8 +15,8 @@
 #include <ndn-cxx/face.hpp>
 #include "spdlog/spdlog.h"
 
-#include "ChunkLogger.h"
 #include "SyncTree.h"
+#include "src/logging/ChunkLogger.h"
 #include "zip/GZip.h"
 
 using namespace std::literals;
@@ -33,7 +33,7 @@ class ServerModeSyncClient {
 public:
     ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea,
         unsigned initialRequestLevel, std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime,
-        std::string logfilename, unsigned lowerLevels = 2, unsigned chunkThreshold = 200)
+        const std::string& logFolder, const std::string& logFilePrefix, unsigned lowerLevels = 2, unsigned chunkThreshold = 200)
         : worldPrefix(std::move(worldPrefix))
         , world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
@@ -41,7 +41,9 @@ public:
         , lowerLevels(lowerLevels)
         , chunkThreshold(chunkThreshold)
         , changesOverTime(std::move(changesOverTime))
-        , logger(logfilename)
+        , logFolder(logFolder)
+        , logFilePrefix(logFilePrefix)
+        , logger(logFolder + logFilePrefix + "_chunklog.csv")
     {
 
         spdlog::info("Initialize ServerModeSyncClient");
@@ -69,6 +71,8 @@ protected:
     void applyChangesOverTime();
 
     void synchronizeRemoteRegion(SyncTree* subtree);
+
+    void storeLogValues();
 
     // NDN Consumer Methods
     void onSubtreeSyncResponseReceived(const ndn::Interest&, const ndn::Data& data);
@@ -100,6 +104,8 @@ protected:
 
     std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime;
 
+    std::string logFolder;
+    std::string logFilePrefix;
     ChunkLogger logger;
 
     std::atomic<bool> isRunning = true;
@@ -108,6 +114,10 @@ protected:
     std::atomic<unsigned> currentTick = 0;
     std::mutex treeAccessMutex;
     std::mutex keyChainMutex;
+
+    unsigned long received_chunk_responses = 0;
+    unsigned long received_subtree_responses = 0;
+    unsigned long received_unknown_hash_responses = 0;
 };
 
 }

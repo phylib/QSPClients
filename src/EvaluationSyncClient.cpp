@@ -81,9 +81,9 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> readChangesOverTi
 }
 
 void storeParameters(std::string logDir, std::string responsibilityArea, int treeSize, int requestLevel,
-    std::string traceFile, std::string prefix)
+    std::string traceFile, std::string prefix, int chunkThreshold, int levelDifference)
 {
-    std::ofstream logfile = std::ofstream(logDir + "/SyncClientSettings.txt");
+    std::ofstream logfile = std::ofstream(logDir + "/" + responsibilityArea + "_settings.txt");
     logfile << "[Parameters]" << std::endl;
     logfile << "logDir:\t" << logDir << std::endl;
     logfile << "responsiblityArea:\t" << responsibilityArea << std::endl;
@@ -91,6 +91,8 @@ void storeParameters(std::string logDir, std::string responsibilityArea, int tre
     logfile << "requestLevel:\t" << requestLevel << std::endl;
     logfile << "traceFile:\t" << traceFile << std::endl;
     logfile << "prefix:\t" << prefix << std::endl;
+    logfile << "chunkThreshold:\t" << chunkThreshold << std::endl;
+    logfile << "levelDifference:\t" << levelDifference << std::endl;
     logfile.flush();
     logfile.close();
 }
@@ -101,15 +103,18 @@ int main(int argc, char* argv[])
 
     po::options_description desc("Usage");
     int opt;
-    desc.add_options()("help", "produce help message")("responsiblityArea", po::value<std::string>(),
-        "Set the responsibility area of the server. String in form of x1,y1,x2,y2")(
-        "treeSize", po::value<int>(&opt)->default_value(65536), "set the id of the current server")(
-        "requestLevel", po::value<int>(&opt)->default_value(1), "In which level of the quadtree are requests sent")(
-        "logDir", po::value<std::string>()->default_value("logs"), "Directory where log output is stored")("traceFile",
-        po::value<std::string>()->default_value(
-            "../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"),
-        "File where chunk changes are located")(
-        "prefix", po::value<std::string>()->default_value("/world"), "Application specific prefix");
+    /* clang-format off */
+    desc.add_options()
+        ("help", "produce help message")
+        ("responsiblityArea", po::value<std::string>(), "Set the responsibility area of the server. String in form of x1,y1,x2,y2")
+        ("treeSize", po::value<int>(&opt)->default_value(65536), "set the id of the current server")
+        ("requestLevel", po::value<int>(&opt)->default_value(1), "In which level of the quadtree are requests sent")
+        ("logDir", po::value<std::string>()->default_value("logs"), "Directory where log output is stored")
+        ("traceFile", po::value<std::string>()->default_value("../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"), "File where chunk changes are located")
+        ("prefix", po::value<std::string>()->default_value("/world"), "Application specific prefix")
+        ("levelDifference", po::value<int>(&opt)->default_value(2), "How many levels to go deeper for respones with high number of chunk changes")
+        ("chunkThreshold", po::value<int>(&opt)->default_value(200), "The maximum amount of chunks included in a sync response");
+    /* clang-format on */
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -141,8 +146,11 @@ int main(int argc, char* argv[])
     std::string logDir = vm["logDir"].as<std::string>();
     std::string traceFile = vm["traceFile"].as<std::string>();
     std::string prefix = vm["prefix"].as<std::string>();
+    int chunkThreshold = vm["chunkThreshold"].as<int>();
+    int levelDifference = vm["levelDifference"].as<int>();
 
-    storeParameters(logDir, responsibilityAreaString, treeSize, initialRequestLevel, traceFile, prefix);
+    storeParameters(logDir, responsibilityAreaString, treeSize, initialRequestLevel, traceFile, prefix, chunkThreshold,
+        levelDifference);
 
     // Parse CSV File
     auto changesOverTime = readChangesOverTime(traceFile, treeSize);
@@ -153,7 +161,7 @@ int main(int argc, char* argv[])
         quadtree::Point(std::stoi(coordinates[2]), std::stoi(coordinates[3])));
 
     quadtree::ServerModeSyncClient client(prefix, world, responsibility, initialRequestLevel, changesOverTime,
-        logDir + "/Testlog_" + responsibilityAreaString + ".csv");
+        logDir + "/", responsibilityAreaString, levelDifference, chunkThreshold);
 
     // Start Sync Client
     try {

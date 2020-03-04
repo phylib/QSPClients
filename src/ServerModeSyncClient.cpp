@@ -64,8 +64,11 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
     }
     spdlog::info("All changes applied, killing application");
 
+    storeLogValues();
+
     // Close application when trace ended
     this->isRunning = false;
+    usleep(1000);
     this->face.shutdown();
     exit(0);
 }
@@ -105,6 +108,8 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::Interest& interest, const ndn::Data& data)
 {
 
+    // Todo: Log how many subtree responses, chunk responses and hash unknown responses were received
+
     spdlog::debug("Received sync update: " + interest.getName().toUri());
     // Todo: Verify signature
 
@@ -119,6 +124,7 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
 
     if (response.chunkdata()) {
         spdlog::trace("Sync Update contains chunk data");
+        received_chunk_responses++;
         // If the response contains chunks, log when the change arrived
         auto now = std::chrono::system_clock::now();
         auto duration = now.time_since_epoch();
@@ -132,6 +138,10 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
         }
     } else {
         spdlog::trace("Sync Update contains subtree hashes. HashKnown=" + std::to_string(response.hashknown()));
+        received_subtree_responses++;
+        if (!response.has_hashknown()) {
+            received_unknown_hash_responses++;
+        }
     }
 
     // Apply the sync response to the local sync tree
@@ -160,9 +170,9 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
 
             spdlog::trace("Express Interest for Subtreerequest " + subtreeRequestName.toUri());
             this->face.expressInterest(subtreeRequest,
-                                       std::bind(&ServerModeSyncClient::onSubtreeSyncResponseReceived, this, _1, _2),
-                                       std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
-                                       std::bind(&ServerModeSyncClient::onTimeout, this, _1));
+                std::bind(&ServerModeSyncClient::onSubtreeSyncResponseReceived, this, _1, _2),
+                std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
+                std::bind(&ServerModeSyncClient::onTimeout, this, _1));
         }
 
     } else if (applyResult.first) { // Else, the tree is in sync
@@ -177,7 +187,23 @@ void quadtree::ServerModeSyncClient::onNack(const ndn::Interest& interest, const
 {
     // Todo: How to handle NACKs?
 
-    spdlog::debug("Received Nack for " + interest.getName().toUri());
+    std::string nackReason;
+    switch (nack.getReason()) {
+    case ndn::lp::NackReason::CONGESTION:
+        nackReason = "CONGESTION";
+        break;
+    case ndn::lp::NackReason::NONE:
+        nackReason = "NONE";
+        break;
+    case ndn::lp::NackReason::DUPLICATE:
+        nackReason = "DUPLICATE";
+        break;
+    case ndn::lp::NackReason::NO_ROUTE:
+        nackReason = "NO_ROUTE";
+        break;
+    }
+
+    spdlog::debug("Received Nack for " + interest.getName().toUri() + " with reason " + nackReason);
 }
 
 void quadtree::ServerModeSyncClient::onTimeout(const ndn::Interest& interest)
@@ -223,4 +249,13 @@ void quadtree::ServerModeSyncClient::onRegisterFailed(const ndn::Name& prefix, c
 {
     spdlog::error("ERROR: Failed to register prefix '" + prefix.toUri() + "' with the local forwarder");
     this->face.shutdown();
+}
+void quadtree::ServerModeSyncClient::storeLogValues()
+{
+    std::ofstream logfile = std::ofstream(logFolder + logFilePrefix + "_stats.txt");
+    logfile << "received_chunk_responses: " << received_chunk_responses << std::endl;
+    logfile << "received_subtree_responses: " << received_subtree_responses << std::endl;
+    logfile << "received_unknown_hash_responses: " << received_unknown_hash_responses << std::endl;
+    logfile.flush();
+    logfile.close();
 }
