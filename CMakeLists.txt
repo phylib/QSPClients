@@ -54,6 +54,7 @@ target_include_directories(SyncTreeTests
         ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${NDN_CXX_INCLUDE_DIRS}
+        ${CATCH2_INCLUDE_DIRS}
         )
 target_link_libraries(SyncTreeTests
         PUBLIC
@@ -69,7 +70,7 @@ add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/SyncTree.cpp src/SyncTree.h
         src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
-        src/ChunkLogger.h src/ChunkLogger.cpp
+        src/logging/ChunkLogger.h src/logging/ChunkLogger.cpp
         src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
 target_link_libraries(EvaluationSyncClient
         PUBLIC
@@ -93,5 +94,18 @@ target_link_libraries(Testclient
         )
 target_include_directories(Testclient
         PUBLIC
+        ${NDN_CXX_INCLUDE_DIRS}
+        )
+
+add_executable(SVSClient src/svs/client_main.cpp
+        src/svs/svs.hpp src/svs/svs.cpp
+        src/svs/svs_common.hpp src/svs/svs_helper.hpp)
+target_link_libraries(SVSClient
+        PUBLIC
+        ${NDN_CXX_LIBRARIES}
+        )
+target_include_directories(SVSClient
+        PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}
         ${NDN_CXX_INCLUDE_DIRS}
         )
