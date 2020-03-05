@@ -12,8 +12,8 @@
 #include <thread>
 #include <utility>
 
-#include <ndn-cxx/face.hpp>
 #include "spdlog/spdlog.h"
+#include <ndn-cxx/face.hpp>
 
 #include "SyncTree.h"
 #include "src/logging/ChunkLogger.h"
@@ -33,7 +33,8 @@ class ServerModeSyncClient {
 public:
     ServerModeSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea,
         unsigned initialRequestLevel, std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime,
-        const std::string& logFolder, const std::string& logFilePrefix, unsigned lowerLevels = 2, unsigned chunkThreshold = 200)
+        const std::string& logFolder, const std::string& logFilePrefix, unsigned lowerLevels = 2,
+        unsigned chunkThreshold = 200)
         : worldPrefix(std::move(worldPrefix))
         , world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
@@ -108,10 +109,10 @@ protected:
     std::string logFilePrefix;
     ChunkLogger logger;
 
-    std::atomic<bool> isRunning = true;
+    std::atomic<bool> isRunning { true };
     std::thread publisherThread;
     std::vector<std::thread> consumerthreads;
-    std::atomic<unsigned> currentTick = 0;
+    std::atomic<unsigned> currentTick { 0 };
     std::mutex treeAccessMutex;
     std::mutex keyChainMutex;
 

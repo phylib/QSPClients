@@ -193,7 +193,7 @@ void SyncTree::reHash(bool force)
         // Only store "new revision" if something in the tree changed
         if (this->currentHash != hash_value) {
 
-            this->storedChanges = std::pair(this->currentHash, changedChunks);
+            this->storedChanges = std::pair<std::size_t, std::vector<Chunk*>>(this->currentHash, changedChunks);
 
             this->currentHash = hash_value;
             this->changedChunks = std::vector<Chunk*>();

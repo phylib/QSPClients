@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(QuadTreeSyncEvaluation)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-pedantic -Wall -Werror -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
 
 find_package(PkgConfig REQUIRED)
