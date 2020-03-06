@@ -11,6 +11,34 @@
 
 using namespace quadtree;
 
+TEST_CASE("Test Point Equality methods")
+{
+    // Equality
+    Point p1(1, 1);
+    Point p2(1, 1);
+    REQUIRE(p1 == p2);
+    REQUIRE(!(p1 < p2));
+    REQUIRE(!(p2 < p1));
+
+    // Both coords larger
+    Point p3(2, 2);
+    REQUIRE(p1 != p3);
+    REQUIRE(p1 < p3);
+    REQUIRE(!(p3 < p1));
+
+    // Only y larger
+    Point p4(1, 4);
+    REQUIRE(p1 != p4);
+    REQUIRE(p1 < p4);
+    REQUIRE(!(p4 < p1));
+
+    // Only x larger
+    Point p5(4, 1);
+    REQUIRE(p1 != p5);
+    REQUIRE(p1 < p5);
+    REQUIRE(!(p5 < p1));
+}
+
 TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
 {
 
@@ -439,7 +467,6 @@ SCENARIO("Test hash functions of the sync tree")
                 REQUIRE(!changes.first);
             }
         }
-
     }
 }
 
@@ -755,7 +782,7 @@ TEST_CASE("Correctly create and apply SyncResponse message")
             }
             THEN("with a large threshold, all chunks should be enumerated")
             {
-                SyncResponse largeSyncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 65*65);
+                SyncResponse largeSyncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 65 * 65);
                 REQUIRE(!largeSyncResponse.hashknown());
                 REQUIRE(largeSyncResponse.chunkdata());
                 REQUIRE(largeSyncResponse.chunks_size() == 5);
@@ -787,7 +814,9 @@ TEST_CASE("Correctly create and apply SyncResponse message")
             auto applyResult = clonedTree.applySyncResponse(syncResponse);
             REQUIRE(applyResult.second.size() == 4);
 
-            THEN("none of the subtree requests should contain hash values and the tree should be synced after applying all") {
+            THEN("none of the subtree requests should contain hash values and the tree should be synced after applying "
+                 "all")
+            {
 
                 for (SyncTree* subtreeCloned : applyResult.second) {
                     SyncTree* subtreeOriginal(originalTree.getSubtreeFromName(subtreeCloned->subtreeToName()));
@@ -838,13 +867,15 @@ TEST_CASE("Test NDN parts of the sync tree")
             THEN("The result should be /3/3/3/3/3") { REQUIRE(stringName.compare("/3/3/3/3/3") == 0); }
         }
 
-        WHEN("the name of a subtree with hash is requested") {
+        WHEN("the name of a subtree with hash is requested")
+        {
             syncTree.change(63, 63);
             Rectangle subtreeRect(Point(62, 62), Point(64, 64));
             SyncTree* subtree = syncTree.getSubtree(subtreeRect);
             ndn::Name name = subtree->subtreeToName(true);
 
-            THEN("it should be possible to decode the correct hash") {
+            THEN("it should be possible to decode the correct hash")
+            {
                 ndn::Name::Component hashComponent = name.get(name.size() - 1);
                 size_t subtreeHash = hashComponent.toNumber();
                 REQUIRE(subtree->getHash() == subtreeHash);
@@ -853,12 +884,14 @@ TEST_CASE("Test NDN parts of the sync tree")
             }
         }
 
-        WHEN("the name /world/0/0/h/12123 is parsed") {
+        WHEN("the name /world/0/0/h/12123 is parsed")
+        {
             syncTree.change(0, 0);
-            Rectangle correctRect(Point(0,0), Point(16,16));
+            Rectangle correctRect(Point(0, 0), Point(16, 16));
             SyncTree* correctSubtree = syncTree.getSubtree(correctRect);
             ndn::Name name("/world/0/0/h/12123");
-            THEN("the correct subtree should be returned") {
+            THEN("the correct subtree should be returned")
+            {
                 SyncTree* subtree = syncTree.getSubtreeFromName(name);
                 REQUIRE(subtree == correctSubtree);
             }
