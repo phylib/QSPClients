@@ -37,6 +37,13 @@ TEST_CASE("Test Point Equality methods")
     REQUIRE(p1 != p5);
     REQUIRE(p1 < p5);
     REQUIRE(!(p5 < p1));
+
+    std::map<Point, int> pointMap;
+    pointMap.insert({ p1, 5 });
+    REQUIRE(pointMap.find(p1) != pointMap.end());
+    REQUIRE(pointMap.find(p2) != pointMap.end());
+    REQUIRE(pointMap.find(p3) == pointMap.end());
+    REQUIRE(pointMap[p1] == 5);
 }
 
 TEST_CASE("Basic SyncTree Structure and function", "[SyncTree]")
