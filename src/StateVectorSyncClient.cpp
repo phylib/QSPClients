@@ -43,7 +43,7 @@ void quadtree::StateVectorSyncClient::submitChange(const std::vector<quadtree::P
             if (responsibleArea.isPointInRectangle(changedPoint)) {
                 // Change the area in the local data store
                 Chunk changedChunk(changedPoint, 0);
-                if (knownPoints.find(changedPoint) != knownPoints.end()) {
+                if (knownPoints.find(changedPoint) == knownPoints.end()) {
                     knownPoints[changedPoint] = 0;
                 } else {
                     unsigned version = knownPoints[changedPoint];
@@ -113,7 +113,7 @@ void quadtree::StateVectorSyncClient::onSyncResponseReceived(const ndn::svs::Nod
             Chunk receivedChunk(p, protoChunk.data());
             logger.logChunkUpdateReceived(receivedChunk, millis);
 
-            if (knownPoints.find(p) != knownPoints.end()) {
+            if (knownPoints.find(p) == knownPoints.end()) {
                 knownPoints[p] = receivedChunk.data;
             } else {
                 unsigned version = knownPoints[p];
