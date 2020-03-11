@@ -108,8 +108,6 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::Interest& interest, const ndn::Data& data)
 {
 
-    // Todo: Log how many subtree responses, chunk responses and hash unknown responses were received
-
     spdlog::debug("Received sync update: " + interest.getName().toUri());
     // Todo: Verify signature
 

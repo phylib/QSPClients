@@ -30,7 +30,7 @@ class Program {
   explicit Program(const Options &options)
       : m_options(options),
         m_svs(m_options.m_id,
-              std::bind(&Program::onMsg, this, std::placeholders::_1)) {
+              std::bind(&Program::onMsg, this, std::placeholders::_1, std::placeholders::_2)) {
     printf("SVS client %lu starts\n", m_options.m_id);
 
     // Suppress warning
@@ -63,18 +63,9 @@ class Program {
   /**
    * onMsg() - Callback on receiving msg from sync layer.
    */
-  void onMsg(const std::string &msg) {
-    // Parse received msg
-    std::vector<std::string> result;
-    size_t cursor = msg.find(":");
-    result.push_back(msg.substr(0, cursor));
-    if (cursor < msg.length() - 1)
-      result.push_back(msg.substr(cursor + 1));
-    else
-      result.push_back("");
-
+  void onMsg(const ndn::svs::NodeID& senderNodeId, const std::string &msg) {
     // Print to stdout
-    printf("User %s>> %s\n\n", result[0].c_str(), result[1].c_str());
+    printf("User %lul>> %s\n\n", senderNodeId, msg.c_str());
   }
 
 

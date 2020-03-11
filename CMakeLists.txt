@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(QuadTreeSyncEvaluation)
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-pedantic -Wall -Werror -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color")
+set(CMAKE_CXX_FLAGS "-pedantic -Wall -Werror -Wextra -Wno-unused-parameter -Wno-unused-variable -Wno-unused-but-set-variable -Wno-error=unused-variable -Wno-error=unused-but-set-variable -fdiagnostics-color -Wno-error=deprecated-declarations")
 
 find_package(PkgConfig REQUIRED)
 
@@ -69,6 +69,7 @@ add_executable(EvaluationSyncClient src/EvaluationSyncClient.cpp
         src/QuadTreeStructs.h
         src/SyncTree.cpp src/SyncTree.h
         src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
+        src/csv/ChunkFileReader.h src/csv/ChunkFileReader.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
         src/logging/ChunkLogger.h src/logging/ChunkLogger.cpp
         src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
@@ -106,6 +107,29 @@ target_link_libraries(SVSClient
         )
 target_include_directories(SVSClient
         PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${NDN_CXX_INCLUDE_DIRS}
+        )
+
+add_executable(StateVectorSyncClient
+        src/StateVectorSyncClient.h src/StateVectorSyncClient.cpp
+        src/svs/svs_helper.hpp src/svs/svs_common.hpp
+        src/svs/svs.hpp src/svs/svs.cpp
+        src/csv/ChunkFileReader.h src/csv/ChunkFileReader.cpp
+        src/csv/CSVReader.cpp src/csv/CSVReader.h
+        src/zip/GZip.h
+        src/logging/ChunkLogger.h src/logging/ChunkLogger.cpp
+        src/proto/ChunkChanges.pb.h src/proto/ChunkChanges.pb.cc)
+target_link_libraries(StateVectorSyncClient
+        PUBLIC
+        ${PROTOBUF_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
+        )
+target_include_directories(StateVectorSyncClient
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
         ${CMAKE_CURRENT_BINARY_DIR}
         ${NDN_CXX_INCLUDE_DIRS}
         )

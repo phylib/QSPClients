@@ -38,8 +38,8 @@ void SVS::registerPrefix() {
  *  sync layer. The sync layer will keep a copy.
  */
 void SVS::publishMsg(const std::string &msg) {
-  printf(">> %s\n\n", msg.c_str());
-  fflush(stdout);
+//  printf(">> %s\n\n", msg.c_str());
+//  fflush(stdout);
 
   m_vv[m_id]++;
 
@@ -261,9 +261,9 @@ void SVS::onDataReply(const Data &data) {
   // Pass msg to application in format: <sender_id>:<content>
   size_t data_size = data.getContent().value_size();
   std::string content_str((char *)data.getContent().value(), data_size);
-  content_str = boost::lexical_cast<std::string>(nid_other) + ":" + content_str;
+//  content_str = boost::lexical_cast<std::string>(nid_other) + ":" + content_str;
 
-  onMsg(content_str);
+  onMsg(nid_other, content_str);
 }
 
 /**
