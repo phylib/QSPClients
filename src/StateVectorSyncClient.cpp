@@ -81,13 +81,15 @@ void quadtree::StateVectorSyncClient::submitChange(const std::vector<quadtree::P
     svs.publishMsg(compressed);
 }
 
-void quadtree::StateVectorSyncClient::onSyncResponseReceived(const ndn::svs::NodeID& senderNodeId, const std::string& msg)
+void quadtree::StateVectorSyncClient::onSyncResponseReceived(
+    const ndn::svs::NodeID& senderNodeId, const std::string& msg)
 {
 
     // Todo: Log how many subtree responses, chunk responses and hash unknown responses were received
 
     // Parse received msg
-    spdlog::debug("Received sync update of node " + std::to_string(senderNodeId) + " of size: " + std::to_string(msg.size()));
+    spdlog::debug(
+        "Received sync update of node " + std::to_string(senderNodeId) + " of size: " + std::to_string(msg.size()));
     //    spdlog::trace("Message: " + msg);
     // Todo: Verify signature
 
@@ -141,7 +143,6 @@ void quadtree::StateVectorSyncClient::startSynchronization()
     this->publisherThread = std::thread(&StateVectorSyncClient::applyChangesOverTime, this);
 
     // Producer listening to requests from subtree
-    ndn::Name ownRegionName(worldPrefix);
     svs.registerPrefix();
 
     // Create other thread to run
@@ -157,7 +158,7 @@ void quadtree::StateVectorSyncClient::startSynchronization()
 // ----------------- METHODS REQURIRED FOR MAIN ------------------------
 
 void storeParameters(
-    std::string logDir, std::string responsibilityArea, int treeSize, std::string traceFile, std::string prefix)
+    std::string logDir, std::string responsibilityArea, int treeSize, std::string traceFile)
 {
     std::ofstream logfile = std::ofstream(logDir + "/" + responsibilityArea + "_settings.txt");
     logfile << "[Parameters]" << std::endl;
@@ -165,7 +166,6 @@ void storeParameters(
     logfile << "responsiblityArea:\t" << responsibilityArea << std::endl;
     logfile << "treeSize:\t" << treeSize << std::endl;
     logfile << "traceFile:\t" << traceFile << std::endl;
-    logfile << "prefix:\t" << prefix << std::endl;
     logfile.flush();
     logfile.close();
 }
@@ -184,8 +184,7 @@ int main(int argc, char* argv[])
         ("clientId", po::value<int>(), "ID of the client (used as sync prefix)")
         ("treeSize", po::value<int>(&opt)->default_value(65536), "set the id of the current server")
         ("logDir", po::value<std::string>()->default_value("logs"), "Directory where log output is stored")
-        ("traceFile", po::value<std::string>()->default_value("../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"), "File where chunk changes are located")
-        ("prefix", po::value<std::string>()->default_value("/world"), "Application specific prefix");
+        ("traceFile", po::value<std::string>()->default_value("../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"), "File where chunk changes are located");
     /* clang-format on */
 
     po::variables_map vm;
@@ -224,9 +223,8 @@ int main(int argc, char* argv[])
     unsigned treeSize = vm["treeSize"].as<int>();
     std::string logDir = vm["logDir"].as<std::string>();
     std::string traceFile = vm["traceFile"].as<std::string>();
-    std::string prefix = vm["prefix"].as<std::string>();
 
-    storeParameters(logDir, responsibilityAreaString, treeSize, traceFile, prefix);
+    storeParameters(logDir, responsibilityAreaString, treeSize, traceFile);
 
     // Parse CSV File
     auto changesOverTime = ChunkFileReader::readChangesOverTime(traceFile, treeSize);
@@ -237,6 +235,6 @@ int main(int argc, char* argv[])
         quadtree::Point(std::stoi(coordinates[2]), std::stoi(coordinates[3])));
 
     quadtree::StateVectorSyncClient client(
-        prefix, world, responsibility, clientId, changesOverTime, logDir, std::to_string(clientId));
+        world, responsibility, clientId, changesOverTime, logDir, std::to_string(clientId));
     client.startSynchronization();
 }

@@ -28,11 +28,10 @@ namespace quadtree {
 class StateVectorSyncClient {
 
 public:
-    StateVectorSyncClient(std::string worldPrefix, Rectangle area, Rectangle responsibleArea, ndn::svs::NodeID nodeId,
+    StateVectorSyncClient(Rectangle area, Rectangle responsibleArea, ndn::svs::NodeID nodeId,
         std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime, const std::string& logFolder,
         const std::string& logFilePrefix)
-        : worldPrefix(std::move(worldPrefix))
-        , world(std::move(area))
+        : world(std::move(area))
         , responsibleArea(std::move(responsibleArea))
         , nodeId(nodeId)
         , svs(nodeId, std::bind(&StateVectorSyncClient::onSyncResponseReceived, this, std::placeholders::_1, std::placeholders::_2))
@@ -62,7 +61,6 @@ public:
     const unsigned SLEEP_TIME_MS = 500;
 
 protected:
-    std::string worldPrefix;
     Rectangle world;
     Rectangle responsibleArea;
 
