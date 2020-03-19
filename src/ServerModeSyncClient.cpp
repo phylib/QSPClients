@@ -176,8 +176,7 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
     } else if (applyResult.first) { // Else, the tree is in sync
         spdlog::trace("Subtree " + interest.getName().toUri() + " is in sync");
     } else {
-        spdlog::error("Subtree " + interest.getName().toUri() + " is not in sync after chunkUpdate, eliminate");
-        exit(-1);
+        spdlog::error("Subtree " + interest.getName().toUri() + " is not in sync after chunkUpdate");
     }
 }
 
