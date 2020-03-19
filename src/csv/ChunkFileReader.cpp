@@ -52,7 +52,7 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> ChunkFileReader::
     int width = maxX - minX;
     int height = maxY - minY;
     int xCenter = minX + (width / 2);
-    int yCenter = minY + (width / 2);
+    int yCenter = minY + (height / 2);
     int xShift = (treeSize / 2) - xCenter;
     int yShift = (treeSize / 2) - yCenter;
 
