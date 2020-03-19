@@ -158,7 +158,7 @@ void quadtree::StateVectorSyncClient::startSynchronization()
 // ----------------- METHODS REQURIRED FOR MAIN ------------------------
 
 void storeParameters(
-    std::string logDir, std::string responsibilityArea, int treeSize, std::string traceFile)
+    std::string logDir, std::string responsibilityArea, int treeSize, std::string traceFile, int clientId)
 {
     std::ofstream logfile = std::ofstream(logDir + "/" + responsibilityArea + "_settings.txt");
     logfile << "[Parameters]" << std::endl;
@@ -166,6 +166,7 @@ void storeParameters(
     logfile << "responsiblityArea:\t" << responsibilityArea << std::endl;
     logfile << "treeSize:\t" << treeSize << std::endl;
     logfile << "traceFile:\t" << traceFile << std::endl;
+    logfile << "clientId:\t" << clientId << std::endl;
     logfile.flush();
     logfile.close();
 }
@@ -224,7 +225,7 @@ int main(int argc, char* argv[])
     std::string logDir = vm["logDir"].as<std::string>();
     std::string traceFile = vm["traceFile"].as<std::string>();
 
-    storeParameters(logDir, responsibilityAreaString, treeSize, traceFile);
+    storeParameters(logDir, responsibilityAreaString, treeSize, traceFile, clientId);
 
     // Parse CSV File
     auto changesOverTime = ChunkFileReader::readChangesOverTime(traceFile, treeSize);
