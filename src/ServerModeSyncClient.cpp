@@ -127,11 +127,6 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
             }
         }
 
-        // Remember the time of sent interest
-        auto now = std::chrono::system_clock::now();
-        auto duration = now.time_since_epoch();
-        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-
         nextRequest += std::chrono::milliseconds(sleep_time);
 
         std::this_thread::sleep_until(nextRequest);
