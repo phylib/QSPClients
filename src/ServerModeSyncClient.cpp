@@ -61,6 +61,11 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
                 this->submitChange(chunk.pos, ownChunks.size());
             }
             this->world.reHash();
+
+            // Log the time when the tree was rehashed
+            auto now = std::chrono::system_clock::now();
+            auto duration = now.time_since_epoch();
+            this->last_publish_timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
         }
 
         std::this_thread::sleep_until(nextChangePublication);
@@ -86,9 +91,11 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
 
         // Construct name and issue Interest
         ndn::Name subtreeName;
+        std::string subtreeNameNoHash;
         {
             std::unique_lock<std::mutex> lck(this->treeAccessMutex);
             subtreeName = subtree->subtreeToName(true);
+            subtreeNameNoHash = worldPrefix + subtree->subtreeToName(false).toUri();
         }
         ndn::Name subtreeRequestName(worldPrefix);
         subtreeRequestName.append(subtreeName);
@@ -104,8 +111,30 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
             std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
             std::bind(&ServerModeSyncClient::onTimeout, this, _1));
 
+        long sleep_time = ServerModeSyncClient::SLEEP_TIME_MS;
+        // Calculate how long the response to the last interest took
+        {
+            if (received_data_runtimes.find(subtreeNameNoHash) != received_data_runtimes.end()) {
+                long duration = received_data_runtimes[subtreeNameNoHash];
+                spdlog::trace("Received sync data " + std::to_string(duration) + "ms after publishing");
+                // We expect the interest taking about 100ms, if it takes significantly longer, try correcting the time
+                // when next interest is sent
+                if (duration > 200 && duration < 500) {
+                    spdlog::debug("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
+                    sleep_time = 200; // Just a hack
+                }
+                received_data_runtimes.erase(subtreeNameNoHash);
+            }
+        }
+
+        // Remember the time of sent interest
+        auto now = std::chrono::system_clock::now();
+        auto duration = now.time_since_epoch();
+        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+
+        nextRequest += std::chrono::milliseconds(sleep_time);
+
         std::this_thread::sleep_until(nextRequest);
-        nextRequest += std::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS);
     }
 }
 
@@ -117,6 +146,14 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
 
     // Todo: Decrypt packet
 
+    // Log time of received data
+    std::string nameWithoutHash = interest.getName().getSubName(0, interest.getName().size() - 2).toUri();
+
+    auto now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    // received_data_runtimes[nameWithoutHash] = millis;
+
     // unzip und unserialize data
     char* rawData = (char*)data.getContent().value();
     std::string receivedData = std::string(rawData, data.getContent().value_size());
@@ -124,13 +161,14 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
     quadtree::SyncResponse response;
     response.ParseFromString(decompressed);
 
+    // Calculate difference between generation of data and time the first response was received
+    long difference = millis - response.lastpublishevent();
+    received_data_runtimes[nameWithoutHash] = difference;
+
     if (response.chunkdata()) {
         spdlog::trace("Sync Update contains chunk data");
         received_chunk_responses++;
         // If the response contains chunks, log when the change arrived
-        auto now = std::chrono::system_clock::now();
-        auto duration = now.time_since_epoch();
-        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
         for (const auto& chunk : response.chunks()) {
             Chunk c;
             c.pos.x = chunk.x();
@@ -225,7 +263,8 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     if (subtreeName.get(subtreeName.size() - 2).toUri() == "h") {
         hash = subtreeName.get(subtreeName.size() - 1).toNumber();
     }
-    const SyncResponse& syncResponse = syncTree->prepareSyncResponse(hash, this->lowerLevels, this->chunkThreshold);
+    SyncResponse syncResponse = syncTree->prepareSyncResponse(hash, this->lowerLevels, this->chunkThreshold);
+    syncResponse.set_lastpublishevent(this->last_publish_timestamp);
     std::string plain = syncResponse.SerializeAsString();
     std::string compressed = GZip::compress(plain);
 

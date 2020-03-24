@@ -116,6 +116,9 @@ protected:
     std::mutex treeAccessMutex;
     std::mutex keyChainMutex;
 
+    long last_publish_timestamp;
+    std::unordered_map<std::string, long> received_data_runtimes;
+
     unsigned long received_chunk_responses = 0;
     unsigned long received_subtree_responses = 0;
     unsigned long received_unknown_hash_responses = 0;

@@ -130,6 +130,13 @@ class SyncResponse : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::uint64 curhash() const;
   void set_curhash(::google::protobuf::uint64 value);
 
+  // required int64 lastPublishEvent = 7;
+  bool has_lastpublishevent() const;
+  void clear_lastpublishevent();
+  static const int kLastPublishEventFieldNumber = 7;
+  ::google::protobuf::int64 lastpublishevent() const;
+  void set_lastpublishevent(::google::protobuf::int64 value);
+
   // repeated .quadtree.ChunkData chunks = 4;
   int chunks_size() const;
   void clear_chunks();
@@ -169,6 +176,8 @@ class SyncResponse : public ::google::protobuf::Message /* @@protoc_insertion_po
   inline void clear_has_chunkdata();
   inline void set_has_curhash();
   inline void clear_has_curhash();
+  inline void set_has_lastpublishevent();
+  inline void clear_has_lastpublishevent();
   inline void set_has_treelevel();
   inline void clear_has_treelevel();
 
@@ -178,10 +187,11 @@ class SyncResponse : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
+  ::google::protobuf::uint64 curhash_;
   bool hashknown_;
   bool chunkdata_;
   ::google::protobuf::uint32 treelevel_;
-  ::google::protobuf::uint64 curhash_;
+  ::google::protobuf::int64 lastpublishevent_;
   ::google::protobuf::RepeatedPtrField< ::quadtree::ChunkData > chunks_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > hashvalues_;
   friend void  protobuf_AddDesc_SyncResponse_2eproto();
@@ -387,6 +397,30 @@ inline void SyncResponse::set_curhash(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:quadtree.SyncResponse.curHash)
 }
 
+// required int64 lastPublishEvent = 7;
+inline bool SyncResponse::has_lastpublishevent() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void SyncResponse::set_has_lastpublishevent() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void SyncResponse::clear_has_lastpublishevent() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void SyncResponse::clear_lastpublishevent() {
+  lastpublishevent_ = GOOGLE_LONGLONG(0);
+  clear_has_lastpublishevent();
+}
+inline ::google::protobuf::int64 SyncResponse::lastpublishevent() const {
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.lastPublishEvent)
+  return lastpublishevent_;
+}
+inline void SyncResponse::set_lastpublishevent(::google::protobuf::int64 value) {
+  set_has_lastpublishevent();
+  lastpublishevent_ = value;
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.lastPublishEvent)
+}
+
 // repeated .quadtree.ChunkData chunks = 4;
 inline int SyncResponse::chunks_size() const {
   return chunks_.size();
@@ -419,13 +453,13 @@ SyncResponse::chunks() const {
 
 // optional uint32 treeLevel = 5;
 inline bool SyncResponse::has_treelevel() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void SyncResponse::set_has_treelevel() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void SyncResponse::clear_has_treelevel() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void SyncResponse::clear_treelevel() {
   treelevel_ = 0u;

@@ -9,6 +9,7 @@ message SyncResponse {
     required bool hashKnown = 1;
     required bool chunkData = 2;
     required uint64 curHash = 3;
+    required int64 lastPublishEvent = 7;
 
     repeated ChunkData chunks = 4;
 

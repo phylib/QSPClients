@@ -39,10 +39,11 @@ void protobuf_AssignDesc_SyncResponse_2eproto() {
       "SyncResponse.proto");
   GOOGLE_CHECK(file != NULL);
   SyncResponse_descriptor_ = file->message_type(0);
-  static const int SyncResponse_offsets_[6] = {
+  static const int SyncResponse_offsets_[7] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, hashknown_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, chunkdata_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, curhash_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, lastpublishevent_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, chunks_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, treelevel_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SyncResponse, hashvalues_),
@@ -111,12 +112,13 @@ void protobuf_AddDesc_SyncResponse_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\022SyncResponse.proto\022\010quadtree\"\221\001\n\014SyncR"
+    "\n\022SyncResponse.proto\022\010quadtree\"\253\001\n\014SyncR"
     "esponse\022\021\n\thashKnown\030\001 \002(\010\022\021\n\tchunkData\030"
-    "\002 \002(\010\022\017\n\007curHash\030\003 \002(\004\022#\n\006chunks\030\004 \003(\0132\023"
-    ".quadtree.ChunkData\022\021\n\ttreeLevel\030\005 \001(\r\022\022"
-    "\n\nhashValues\030\006 \003(\004\"/\n\tChunkData\022\t\n\001x\030\001 \002"
-    "(\004\022\t\n\001y\030\002 \002(\004\022\014\n\004data\030\003 \002(\004", 227);
+    "\002 \002(\010\022\017\n\007curHash\030\003 \002(\004\022\030\n\020lastPublishEve"
+    "nt\030\007 \002(\003\022#\n\006chunks\030\004 \003(\0132\023.quadtree.Chun"
+    "kData\022\021\n\ttreeLevel\030\005 \001(\r\022\022\n\nhashValues\030\006"
+    " \003(\004\"/\n\tChunkData\022\t\n\001x\030\001 \002(\004\022\t\n\001y\030\002 \002(\004\022"
+    "\014\n\004data\030\003 \002(\004", 253);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "SyncResponse.proto", &protobuf_RegisterTypes);
   SyncResponse::default_instance_ = new SyncResponse();
@@ -139,6 +141,7 @@ struct StaticDescriptorInitializer_SyncResponse_2eproto {
 const int SyncResponse::kHashKnownFieldNumber;
 const int SyncResponse::kChunkDataFieldNumber;
 const int SyncResponse::kCurHashFieldNumber;
+const int SyncResponse::kLastPublishEventFieldNumber;
 const int SyncResponse::kChunksFieldNumber;
 const int SyncResponse::kTreeLevelFieldNumber;
 const int SyncResponse::kHashValuesFieldNumber;
@@ -166,6 +169,7 @@ void SyncResponse::SharedCtor() {
   hashknown_ = false;
   chunkdata_ = false;
   curhash_ = GOOGLE_ULONGLONG(0);
+  lastpublishevent_ = GOOGLE_LONGLONG(0);
   treelevel_ = 0u;
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
@@ -223,7 +227,9 @@ void SyncResponse::Clear() {
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
-  ZR_(hashknown_, curhash_);
+  if (_has_bits_[0 / 32] & 47u) {
+    ZR_(curhash_, lastpublishevent_);
+  }
 
 #undef ZR_HELPER_
 #undef ZR_
@@ -337,6 +343,21 @@ bool SyncResponse::MergePartialFromCodedStream(
           goto handle_unusual;
         }
         if (input->ExpectTag(48)) goto parse_hashValues;
+        if (input->ExpectTag(56)) goto parse_lastPublishEvent;
+        break;
+      }
+
+      // required int64 lastPublishEvent = 7;
+      case 7: {
+        if (tag == 56) {
+         parse_lastPublishEvent:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                 input, &lastpublishevent_)));
+          set_has_lastpublishevent();
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -398,6 +419,11 @@ void SyncResponse::SerializeWithCachedSizes(
       6, this->hashvalues(i), output);
   }
 
+  // required int64 lastPublishEvent = 7;
+  if (has_lastpublishevent()) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt64(7, this->lastpublishevent(), output);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     ::google::protobuf::internal::WireFormat::SerializeUnknownFields(
         unknown_fields(), output);
@@ -441,6 +467,11 @@ void SyncResponse::SerializeWithCachedSizes(
       WriteUInt64ToArray(6, this->hashvalues(i), target);
   }
 
+  // required int64 lastPublishEvent = 7;
+  if (has_lastpublishevent()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(7, this->lastpublishevent(), target);
+  }
+
   if (_internal_metadata_.have_unknown_fields()) {
     target = ::google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
         unknown_fields(), target);
@@ -470,13 +501,20 @@ int SyncResponse::RequiredFieldsByteSizeFallback() const {
         this->curhash());
   }
 
+  if (has_lastpublishevent()) {
+    // required int64 lastPublishEvent = 7;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int64Size(
+        this->lastpublishevent());
+  }
+
   return total_size;
 }
 int SyncResponse::ByteSize() const {
 // @@protoc_insertion_point(message_byte_size_start:quadtree.SyncResponse)
   int total_size = 0;
 
-  if (((_has_bits_[0] & 0x00000007) ^ 0x00000007) == 0) {  // All required fields are present.
+  if (((_has_bits_[0] & 0x0000000f) ^ 0x0000000f) == 0) {  // All required fields are present.
     // required bool hashKnown = 1;
     total_size += 1 + 1;
 
@@ -487,6 +525,11 @@ int SyncResponse::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::UInt64Size(
         this->curhash());
+
+    // required int64 lastPublishEvent = 7;
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int64Size(
+        this->lastpublishevent());
 
   } else {
     total_size += RequiredFieldsByteSizeFallback();
@@ -561,6 +604,9 @@ void SyncResponse::MergeFrom(const SyncResponse& from) {
     if (from.has_curhash()) {
       set_curhash(from.curhash());
     }
+    if (from.has_lastpublishevent()) {
+      set_lastpublishevent(from.lastpublishevent());
+    }
     if (from.has_treelevel()) {
       set_treelevel(from.treelevel());
     }
@@ -585,7 +631,7 @@ void SyncResponse::CopyFrom(const SyncResponse& from) {
 }
 
 bool SyncResponse::IsInitialized() const {
-  if ((_has_bits_[0] & 0x00000007) != 0x00000007) return false;
+  if ((_has_bits_[0] & 0x0000000f) != 0x0000000f) return false;
 
   if (!::google::protobuf::internal::AllAreInitialized(this->chunks())) return false;
   return true;
@@ -599,6 +645,7 @@ void SyncResponse::InternalSwap(SyncResponse* other) {
   std::swap(hashknown_, other->hashknown_);
   std::swap(chunkdata_, other->chunkdata_);
   std::swap(curhash_, other->curhash_);
+  std::swap(lastpublishevent_, other->lastpublishevent_);
   chunks_.UnsafeArenaSwap(&other->chunks_);
   std::swap(treelevel_, other->treelevel_);
   hashvalues_.UnsafeArenaSwap(&other->hashvalues_);
@@ -690,6 +737,30 @@ void SyncResponse::clear_curhash() {
   // @@protoc_insertion_point(field_set:quadtree.SyncResponse.curHash)
 }
 
+// required int64 lastPublishEvent = 7;
+bool SyncResponse::has_lastpublishevent() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+void SyncResponse::set_has_lastpublishevent() {
+  _has_bits_[0] |= 0x00000008u;
+}
+void SyncResponse::clear_has_lastpublishevent() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+void SyncResponse::clear_lastpublishevent() {
+  lastpublishevent_ = GOOGLE_LONGLONG(0);
+  clear_has_lastpublishevent();
+}
+ ::google::protobuf::int64 SyncResponse::lastpublishevent() const {
+  // @@protoc_insertion_point(field_get:quadtree.SyncResponse.lastPublishEvent)
+  return lastpublishevent_;
+}
+ void SyncResponse::set_lastpublishevent(::google::protobuf::int64 value) {
+  set_has_lastpublishevent();
+  lastpublishevent_ = value;
+  // @@protoc_insertion_point(field_set:quadtree.SyncResponse.lastPublishEvent)
+}
+
 // repeated .quadtree.ChunkData chunks = 4;
 int SyncResponse::chunks_size() const {
   return chunks_.size();
@@ -722,13 +793,13 @@ SyncResponse::chunks() const {
 
 // optional uint32 treeLevel = 5;
 bool SyncResponse::has_treelevel() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 void SyncResponse::set_has_treelevel() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 void SyncResponse::clear_has_treelevel() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 void SyncResponse::clear_treelevel() {
   treelevel_ = 0u;
