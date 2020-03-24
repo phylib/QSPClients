@@ -4,14 +4,15 @@
 
 #include "ChunkLogger.h"
 
-void ChunkLogger::logChunkUpdateProduced(const quadtree::Chunk& chunk)
+void ChunkLogger::logChunkUpdateProduced(const quadtree::Chunk& chunk, unsigned numChanges)
 {
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
     long millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
     {
         std::unique_lock<std::mutex> lck(this->fileMutex);
-        logfile << millis << sep << "OUT" << sep << chunk.pos.x << sep << chunk.pos.y << sep << chunk.data << std::endl;
+        logfile << millis << sep << "OUT" << sep << chunk.pos.x << sep << chunk.pos.y << sep << chunk.data << sep
+                << numChanges << std::endl;
     }
 }
 
@@ -19,7 +20,7 @@ void ChunkLogger::logChunkUpdateReceived(const quadtree::Chunk& chunk, long time
 {
     {
         std::unique_lock<std::mutex> lck(this->fileMutex);
-        logfile << timestamp << sep << "IN" << sep << chunk.pos.x << sep << chunk.pos.y << sep << chunk.data
-                << std::endl;
+        logfile << timestamp << sep << "IN" << sep << chunk.pos.x << sep << chunk.pos.y << sep << chunk.data << sep
+                << "" << std::endl;
     }
 }

@@ -32,7 +32,7 @@ public:
         }
     }
 
-    void logChunkUpdateProduced(const quadtree::Chunk& chunk);
+    void logChunkUpdateProduced(const quadtree::Chunk& chunk, unsigned numChanges);
 
     void logChunkUpdateReceived(const quadtree::Chunk& chunk, long timestamp);
 

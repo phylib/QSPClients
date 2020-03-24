@@ -64,7 +64,7 @@ public:
     }
 
 public:
-    void submitChange(const Point& changedPoint);
+    void submitChange(const Point& changedPoint, unsigned numChanges);
 
     void startSynchronization();
 

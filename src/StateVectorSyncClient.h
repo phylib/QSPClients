@@ -68,7 +68,7 @@ protected:
     ndn::svs::SVS svs;
 
     std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> changesOverTime;
-    std::map<Point, unsigned> knownPoints;
+    std::map<Point, int> knownPoints;
 
     std::string logFolder;
     std::string logFilePrefix;

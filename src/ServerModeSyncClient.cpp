@@ -4,12 +4,10 @@
 
 #include "ServerModeSyncClient.h"
 
-void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changedPoint)
+void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changedPoint, unsigned numChanges)
 {
-    if (responsibleArea.isPointInRectangle(changedPoint)) {
-        const Chunk& chunk(*world.change(changedPoint.x, changedPoint.y));
-        logger.logChunkUpdateProduced(chunk);
-    }
+    const Chunk& chunk(*world.change(changedPoint.x, changedPoint.y));
+    logger.logChunkUpdateProduced(chunk, numChanges);
 }
 
 void quadtree::ServerModeSyncClient::startSynchronization()
@@ -50,11 +48,17 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
         this->currentTick = tickChunkPair.first;
         spdlog::info("Apply changes of tick " + std::to_string(this->currentTick));
 
+        std::vector<Chunk> ownChunks;
+        for (const auto& chunk : tickChunkPair.second) {
+            if (responsibleArea.isPointInRectangle(chunk.pos)) {
+                ownChunks.push_back(chunk);
+            }
+        }
         {
             std::unique_lock<std::mutex> lck(this->treeAccessMutex);
 
-            for (const auto& chunk : tickChunkPair.second) {
-                this->submitChange(chunk.pos);
+            for (const auto& chunk : ownChunks) {
+                this->submitChange(chunk.pos, ownChunks.size());
             }
             this->world.reHash();
         }

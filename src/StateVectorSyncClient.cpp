@@ -36,24 +36,31 @@ void quadtree::StateVectorSyncClient::applyChangesOverTime()
 void quadtree::StateVectorSyncClient::submitChange(const std::vector<quadtree::Point>& changedPoints)
 {
     std::vector<Chunk> changedChunks;
+
+    // Only apply changes in own area
+    std::vector<quadtree::Point> ownPoints;
+    for (const Point& changedPoint : changedPoints) {
+        if (responsibleArea.isPointInRectangle(changedPoint)) {
+            ownPoints.push_back(changedPoint);
+        }
+    }
+
     {
         std::unique_lock<std::mutex> lck(this->localDataAccessMutex);
 
-        for (const Point& changedPoint : changedPoints) {
-            if (responsibleArea.isPointInRectangle(changedPoint)) {
-                // Change the area in the local data store
-                Chunk changedChunk(changedPoint, 0);
-                if (knownPoints.find(changedPoint) == knownPoints.end()) {
-                    knownPoints[changedPoint] = 0;
-                } else {
-                    unsigned version = knownPoints[changedPoint];
-                    version++;
-                    changedChunk.data = version;
-                    knownPoints[changedPoint] = version;
-                }
-                logger.logChunkUpdateProduced(changedChunk);
-                changedChunks.push_back(changedChunk);
+        for (const Point& changedPoint : ownPoints) {
+            // Change the area in the local data store
+            Chunk changedChunk(changedPoint, 0);
+            if (knownPoints.find(changedPoint) == knownPoints.end()) {
+                knownPoints[changedPoint] = 0;
+            } else {
+                int version = knownPoints[changedPoint];
+                version++;
+                changedChunk.data = version;
+                knownPoints[changedPoint] = version;
             }
+            logger.logChunkUpdateProduced(changedChunk, ownPoints.size());
+            changedChunks.push_back(changedChunk);
         }
     } // Release lock here
 
