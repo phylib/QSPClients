@@ -117,6 +117,7 @@ protected:
     std::mutex keyChainMutex;
 
     long last_publish_timestamp;
+    std::mutex runtimeMemoryMutex;
     std::unordered_map<std::string, long> received_data_runtimes;
 
     unsigned long received_chunk_responses = 0;

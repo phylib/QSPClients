@@ -114,6 +114,7 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
         long sleep_time = ServerModeSyncClient::SLEEP_TIME_MS;
         // Calculate how long the response to the last interest took
         {
+            std::unique_lock<std::mutex> lck(this->runtimeMemoryMutex);
             if (received_data_runtimes.find(subtreeNameNoHash) != received_data_runtimes.end()) {
                 long duration = received_data_runtimes[subtreeNameNoHash];
                 spdlog::trace("Received sync data " + std::to_string(duration) + "ms after publishing");
@@ -158,7 +159,10 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
 
     // Calculate difference between generation of data and time the first response was received
     long difference = millis - response.lastpublishevent();
-    received_data_runtimes[nameWithoutHash] = difference;
+    {
+        std::unique_lock<std::mutex> lck(this->runtimeMemoryMutex);
+        received_data_runtimes[nameWithoutHash] = difference;
+    }
 
     if (response.chunkdata()) {
         spdlog::trace("Sync Update contains chunk data");
