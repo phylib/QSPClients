@@ -121,8 +121,11 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
                 // We expect the interest taking about 100ms, if it takes significantly longer, try correcting the time
                 // when next interest is sent
                 if (duration > 200 && duration < 500) {
-                    spdlog::debug("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
+                    spdlog::trace("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
                     sleep_time = 200; // Just a hack
+                } else if (duration > 100) {
+                    spdlog::trace("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
+                    sleep_time = 400;
                 }
                 received_data_runtimes.erase(subtreeNameNoHash);
             }
@@ -262,6 +265,11 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     if (subtreeName.get(subtreeName.size() - 2).toUri() == "h") {
         hash = subtreeName.get(subtreeName.size() - 1).toNumber();
     }
+
+    if (hash == syncTree->getHash()) {
+        spdlog::debug("Hash unchanged");
+    }
+
     SyncResponse syncResponse = syncTree->prepareSyncResponse(hash, this->lowerLevels, this->chunkThreshold);
     syncResponse.set_lastpublishevent(this->last_publish_timestamp);
     std::string plain = syncResponse.SerializeAsString();
