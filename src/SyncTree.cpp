@@ -237,8 +237,7 @@ SyncTree* SyncTree::getSubtree(Rectangle rectangle)
     checkDimensions(rectangle);
 
     // Check if the given rectangle is part of the tree
-    if (rectangle.topleft.x < area.topleft.x || rectangle.bottomRight.x > area.bottomRight.x
-        || rectangle.topleft.y < area.topleft.y || rectangle.bottomRight.y > area.bottomRight.y) {
+    if (!isRectInTree(rectangle)) {
         throw std::invalid_argument("Requested subtree is not part of the current tree");
     }
 
@@ -624,5 +623,31 @@ SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName) const
     }
 
     return current;
+}
+std::vector<SyncTree*> SyncTree::getNeighboursForRectangle(const Rectangle requestedArea)
+{
+    std::vector<SyncTree*> neighbours;
+
+    int size = requestedArea.bottomRight.x - requestedArea.topleft.x;
+    for (int i = -1; i < 2; i++) {
+        for (int j = -1; j < 2; j++) {
+            Point topLeft(requestedArea.topleft.x + (size * i), requestedArea.topleft.y + (size * j));
+            Point bottomRight(topLeft.x + size, topLeft.y + size);
+            Rectangle neighbour(topLeft, bottomRight);
+            if (neighbour != requestedArea && isRectInTree(neighbour)) {
+                neighbours.push_back(getSubtree(neighbour));
+            }
+        }
+    }
+    return neighbours;
+}
+
+bool SyncTree::isRectInTree(const Rectangle& rect) const
+{
+    if (rect.topleft.x < area.topleft.x || rect.bottomRight.x > area.bottomRight.x || rect.topleft.y < area.topleft.y
+        || rect.bottomRight.y > area.bottomRight.y) {
+        return false;
+    }
+    return true;
 }
 }

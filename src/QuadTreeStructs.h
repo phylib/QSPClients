@@ -145,6 +145,9 @@ struct Rectangle {
 
         return true;
     }
+
+    bool operator==(const Rectangle& rhs) const { return topleft == rhs.topleft && bottomRight == rhs.bottomRight; }
+    bool operator!=(const Rectangle& rhs) const { return !(rhs == *this); }
 };
 
 }

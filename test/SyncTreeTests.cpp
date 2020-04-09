@@ -905,3 +905,81 @@ TEST_CASE("Test NDN parts of the sync tree")
         }
     }
 }
+
+TEST_CASE("Test assignment of subscriptions for P2P approach")
+{
+    GIVEN("A Sync tree covering a 64x64 area, with all areas in the third level inflated")
+    {
+        unsigned treeDimension = 64;
+        Rectangle rectangle(Point(0, 0), Point(treeDimension, treeDimension));
+
+
+        SyncTree syncTree(rectangle);
+        for (int i = 0; i < 64; i++) {
+            syncTree.inflateSubtree(3, i);
+        }
+
+        WHEN("A node owns the first 16x16 area") {
+
+            Rectangle nodesRect(Point(0, 0), Point(16, 16));
+
+            THEN("There should be 3 neighbours in the range between 0,0 and 32,32") {
+                const std::vector<SyncTree*>& neighbourVector = syncTree.getNeighboursForRectangle(nodesRect);
+                REQUIRE(neighbourVector.size() == 3);
+
+                std::vector<Rectangle> requiredRects;
+                requiredRects.push_back(Rectangle(Point(0, 16), Point(16, 32)));
+                requiredRects.push_back(Rectangle(Point(16, 0), Point(32, 16)));
+                requiredRects.push_back(Rectangle(Point(16, 16), Point(32, 32)));
+
+                for (const auto& neighbourSubTree : neighbourVector) {
+                    for (auto iter = requiredRects.begin(); iter != requiredRects.end(); ++iter) {
+                        Rectangle r = *iter;
+                        if (r == neighbourSubTree->getArea()) {
+                            requiredRects.erase(iter);
+                            break;
+                        }
+                    }
+                }
+                REQUIRE(requiredRects.size() == 0);
+            }
+
+        }
+
+        WHEN("A node owns the area 16,16;32,32") {
+
+            Rectangle nodesRect(Point(16, 16), Point(32, 32));
+
+            THEN("There should be 3 neighbours in the range between 0,0 and 48,48") {
+                const std::vector<SyncTree*>& neighbourVector = syncTree.getNeighboursForRectangle(nodesRect);
+                REQUIRE(neighbourVector.size() == 8);
+
+                std::vector<Rectangle> requiredRects;
+                requiredRects.push_back(Rectangle(Point(0, 0), Point(16, 16)));
+                requiredRects.push_back(Rectangle(Point(0, 16), Point(16, 32)));
+                requiredRects.push_back(Rectangle(Point(0, 32), Point(16, 48)));
+                requiredRects.push_back(Rectangle(Point(16, 0), Point(32, 16)));
+                requiredRects.push_back(Rectangle(Point(16, 32), Point(32, 48)));
+                requiredRects.push_back(Rectangle(Point(32, 0), Point(48, 16)));
+                requiredRects.push_back(Rectangle(Point(32, 16), Point(48, 32)));
+                requiredRects.push_back(Rectangle(Point(32, 32), Point(48, 48)));
+
+                for (const auto& neighbourSubTree : neighbourVector) {
+                    for (auto iter = requiredRects.begin(); iter != requiredRects.end(); ++iter) {
+                        Rectangle r = *iter;
+                        if (r == neighbourSubTree->getArea()) {
+                            requiredRects.erase(iter);
+                            break;
+                        }
+                    }
+                }
+                REQUIRE(requiredRects.size() == 0);
+            }
+
+        }
+
+
+    }
+
+
+}

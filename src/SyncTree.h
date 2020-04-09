@@ -283,6 +283,8 @@ public:
      */
     SyncTree* getSubtreeFromName(const ndn::Name& subtreeName) const;
 
+    std::vector<SyncTree*> getNeighboursForRectangle(const Rectangle requestedArea);
+
 protected:
     void initChilds();
 
@@ -291,6 +293,8 @@ protected:
     void checkDimensions();
 
     static void checkDimensions(const Rectangle& rect);
+
+    bool isRectInTree(const Rectangle& rect) const;
 
     Chunk* inflateChunk(unsigned x, unsigned y);
 
