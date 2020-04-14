@@ -86,6 +86,8 @@ public:
 
     unsigned getMaxLevel();
 
+    SyncTree* getParent() { return parent; }
+
     /**
      * Traverses the tree and counts the number of inflated nodes (including parent and child chunks)
      *
@@ -302,7 +304,8 @@ protected:
 
     Chunk* inflateChunk(unsigned x, unsigned y, bool rememberChanged);
 
-    std::vector<SyncTree*> getTreeCoverageBasedOnRectangleRecursive(const Rectangle requestedArea, unsigned maxLevel, std::vector<SyncTree*> currentNeighbours);
+    std::vector<SyncTree*> getTreeCoverageBasedOnRectangleRecursive(
+        const Rectangle requestedArea, unsigned maxLevel, std::vector<SyncTree*> currentNeighbours);
 
     /**
      * Returns the hash-values of N-levels of the SyncTree. For implementation, the method calls itself iteratively.

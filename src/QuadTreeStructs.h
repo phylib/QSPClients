@@ -49,6 +49,12 @@ struct Point {
         }
         return false;
     }
+
+    friend std::ostream& operator<<(std::ostream& os, const Point& point)
+    {
+        os << "(x: " << point.x << " y: " << point.y << ")";
+        return os;
+    }
 };
 
 struct Chunk {
@@ -148,6 +154,19 @@ struct Rectangle {
 
     bool operator==(const Rectangle& rhs) const { return topleft == rhs.topleft && bottomRight == rhs.bottomRight; }
     bool operator!=(const Rectangle& rhs) const { return !(rhs == *this); }
+
+    friend std::ostream& operator<<(std::ostream& os, const Rectangle& rectangle)
+    {
+        os << "Area: [topleft: " << rectangle.topleft << " bottomRight: " << rectangle.bottomRight << "]";
+        return os;
+    }
+
+    std::string to_string() const
+    {
+        std::ostringstream ss;
+        ss << *this;
+        return std::move(ss).str(); // enable efficiencies in c++17
+    }
 };
 
 }
