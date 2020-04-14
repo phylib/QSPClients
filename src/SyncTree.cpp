@@ -667,11 +667,11 @@ std::vector<SyncTree*> SyncTree::getTreeCoverageBasedOnRectangleRecursive(
         } else {
             bool alreadyNeighbor = false;
             for (SyncTree* currentNeighbour : currentNeighbours) {
-                if (child->isRectInTree(currentNeighbour->getArea())) {
-                    isCovered = true;
-                    break;
-                } else if (child->getArea() == currentNeighbour->getArea()) {
+                if (child->getArea() == currentNeighbour->getArea()) {
                     alreadyNeighbor = true;
+                    break;
+                } else if (child->isRectInTree(currentNeighbour->getArea())) {
+                    isCovered = true;
                     break;
                 }
             }

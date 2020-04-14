@@ -1109,5 +1109,34 @@ TEST_CASE("Test assignment of subscriptions for P2P approach")
                 REQUIRE(requiredRects.size() == 0);
             }
         }
+
+        WHEN("A node owns the first quarter")
+        {
+            Rectangle nodesRect(Point(0, 0), Point(32, 32));
+
+            THEN("The whole tree should be covered by 3 subtrees")
+            {
+                const std::vector<SyncTree*>& neighbourVector = syncTree.getTreeCoverageBasedOnRectangle(nodesRect, 4);
+                REQUIRE(neighbourVector.size() == 3);
+
+                std::vector<Rectangle> requiredRects;
+                // Outer 16x16 square
+                requiredRects.push_back(Rectangle(Point(0, 32), Point(32, 64)));
+                requiredRects.push_back(Rectangle(Point(32, 0), Point(64, 32)));
+                requiredRects.push_back(Rectangle(Point(32, 32), Point(64, 64)));
+
+
+                for (const auto& neighbourSubTree : neighbourVector) {
+                    for (auto iter = requiredRects.begin(); iter != requiredRects.end(); ++iter) {
+                        Rectangle r = *iter;
+                        if (r == neighbourSubTree->getArea()) {
+                            requiredRects.erase(iter);
+                            break;
+                        }
+                    }
+                }
+                REQUIRE(requiredRects.size() == 0);
+            }
+        }
     }
 }
