@@ -650,4 +650,46 @@ bool SyncTree::isRectInTree(const Rectangle& rect) const
     }
     return true;
 }
+std::vector<SyncTree*> SyncTree::getTreeCoverageBasedOnRectangle(const Rectangle requestedArea, unsigned maxLevel)
+{
+    std::vector<SyncTree*> treeCoverage = getNeighboursForRectangle(requestedArea);
+
+    return getTreeCoverageBasedOnRectangleRecursive(requestedArea, maxLevel, treeCoverage);
+}
+std::vector<SyncTree*> SyncTree::getTreeCoverageBasedOnRectangleRecursive(
+    const Rectangle requestedArea, unsigned maxLevel, std::vector<SyncTree*> currentNeighbours)
+{
+
+    for (SyncTree* child : this->childs) {
+        bool isCovered = false;
+        if (child->getArea() == requestedArea) {
+            continue;
+        } else {
+            bool alreadyNeighbor = false;
+            for (SyncTree* currentNeighbour : currentNeighbours) {
+                if (child->isRectInTree(currentNeighbour->getArea())) {
+                    isCovered = true;
+                    break;
+                } else if (child->getArea() == currentNeighbour->getArea()) {
+                    alreadyNeighbor = true;
+                    break;
+                }
+            }
+            if (alreadyNeighbor) {
+                continue;
+            }
+        }
+        if (isCovered) {
+            // Recursive search
+            if (child->getLevel() < maxLevel) {
+                currentNeighbours
+                    = child->getTreeCoverageBasedOnRectangleRecursive(requestedArea, maxLevel, currentNeighbours);
+            }
+        } else if (child->getArea() != requestedArea) {
+            currentNeighbours.push_back(child);
+        }
+    }
+
+    return currentNeighbours;
+}
 }

@@ -285,6 +285,8 @@ public:
 
     std::vector<SyncTree*> getNeighboursForRectangle(const Rectangle requestedArea);
 
+    std::vector<SyncTree*> getTreeCoverageBasedOnRectangle(const Rectangle requestedArea, unsigned maxLevel);
+
 protected:
     void initChilds();
 
@@ -299,6 +301,8 @@ protected:
     Chunk* inflateChunk(unsigned x, unsigned y);
 
     Chunk* inflateChunk(unsigned x, unsigned y, bool rememberChanged);
+
+    std::vector<SyncTree*> getTreeCoverageBasedOnRectangleRecursive(const Rectangle requestedArea, unsigned maxLevel, std::vector<SyncTree*> currentNeighbours);
 
     /**
      * Returns the hash-values of N-levels of the SyncTree. For implementation, the method calls itself iteratively.
