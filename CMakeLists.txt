@@ -87,6 +87,28 @@ target_include_directories(EvaluationSyncClient
         ${NDN_CXX_INCLUDE_DIRS}
         )
 
+add_executable(P2PModeSyncClient
+        src/QuadTreeStructs.h
+        src/SyncTree.cpp src/SyncTree.h
+        src/P2PModeSyncClient.h src/P2PModeSyncClient.cpp
+        src/csv/ChunkFileReader.h src/csv/ChunkFileReader.cpp
+        src/csv/CSVReader.cpp src/csv/CSVReader.h
+        src/logging/ChunkLogger.h src/logging/ChunkLogger.cpp
+        src/proto/SyncResponse.pb.h src/proto/SyncResponse.pb.cc)
+target_link_libraries(P2PModeSyncClient
+        PUBLIC
+        ${PROTOBUF_LIBRARIES}
+        ${Boost_LIBRARIES}
+        ${NDN_CXX_LIBRARIES}
+        spdlog::spdlog
+        )
+target_include_directories(P2PModeSyncClient
+        PUBLIC
+        ${PROTOBUF_INCLUDE_DIRS}
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${NDN_CXX_INCLUDE_DIRS}
+        )
+
 add_executable(Testclient src/Testclient.cpp)
 target_link_libraries(Testclient
         PUBLIC
