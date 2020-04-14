@@ -47,11 +47,11 @@ public:
         , changesOverTime(std::move(changesOverTime))
         , logFolder(logFolder)
         , logFilePrefix(logFilePrefix)
-        , logger(logFolder + logFilePrefix + "_chunklog.csv")
+        , logger(logFolder + "/" + logFilePrefix + "_chunklog.csv")
     {
 
         spdlog::info("Initialize P2PModeSyncClient");
-        //ndn::Interest::setDefaultCanBePrefix(true);
+        // ndn::Interest::setDefaultCanBePrefix(true);
 
         // Inflate all subtrees on the initial request level
         for (int i = 0; i < pow(4, initialRequestLevel); i++) {
