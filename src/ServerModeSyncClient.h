@@ -47,20 +47,6 @@ public:
         , logger(logFolder + logFilePrefix + "_chunklog.csv")
     {
 
-        spdlog::info("Initialize ServerModeSyncClient");
-
-        // Inflate all subtrees on the initial request level
-        for (int i = 0; i < pow(4, initialRequestLevel); i++) {
-            world.inflateSubtree(initialRequestLevel + 1, i);
-        }
-
-        ownSubtree = world.getSubtree(responsibleArea);
-        auto requestableTrees = world.enumerateLowerLevel(initialRequestLevel);
-        for (const auto& subtree : requestableTrees) {
-            if (subtree != nullptr && subtree != ownSubtree) {
-                remoteSyncTrees.push_back(subtree);
-            }
-        }
     }
 
 public:

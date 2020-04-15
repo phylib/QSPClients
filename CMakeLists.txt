@@ -91,6 +91,7 @@ add_executable(P2PModeSyncClient
         src/QuadTreeStructs.h
         src/SyncTree.cpp src/SyncTree.h
         src/P2PModeSyncClient.h src/P2PModeSyncClient.cpp
+        src/ServerModeSyncClient.h src/ServerModeSyncClient.cpp
         src/csv/ChunkFileReader.h src/csv/ChunkFileReader.cpp
         src/csv/CSVReader.cpp src/csv/CSVReader.h
         src/logging/ChunkLogger.h src/logging/ChunkLogger.cpp

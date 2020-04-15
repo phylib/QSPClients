@@ -13,6 +13,20 @@ void quadtree::ServerModeSyncClient::submitChange(const quadtree::Point& changed
 void quadtree::ServerModeSyncClient::startSynchronization()
 {
 
+    spdlog::info("Initialize ServerModeSyncClient");
+    // Inflate all subtrees on the initial request level
+    for (int i = 0; i < pow(4, initialRequestLevel); i++) {
+        world.inflateSubtree(initialRequestLevel + 1, i);
+    }
+
+    ownSubtree = world.getSubtree(responsibleArea);
+    auto requestableTrees = world.enumerateLowerLevel(initialRequestLevel);
+    for (const auto& subtree : requestableTrees) {
+        if (subtree != nullptr && subtree != ownSubtree) {
+            remoteSyncTrees.push_back(subtree);
+        }
+    }
+
     // This thread applies changes from CSV file, NOT the producer
     this->publisherThread = std::thread(&ServerModeSyncClient::applyChangesOverTime, this);
 
@@ -121,10 +135,12 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
                 // We expect the interest taking about 100ms, if it takes significantly longer, try correcting the time
                 // when next interest is sent
                 if (duration > 200 && duration < 500) {
-                    spdlog::trace("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
+                    spdlog::trace("Received sync response in " + std::to_string(duration)
+                        + "ms -- Adapting Interest issuing time");
                     sleep_time = 200; // Just a hack
                 } else if (duration > 100) {
-                    spdlog::trace("Received sync response in " + std::to_string(duration) + "ms -- Adapting Interest issuing time");
+                    spdlog::trace("Received sync response in " + std::to_string(duration)
+                        + "ms -- Adapting Interest issuing time");
                     sleep_time = 400;
                 }
                 received_data_runtimes.erase(subtreeNameNoHash);
@@ -267,7 +283,9 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     }
 
     if (hash == syncTree->getHash()) {
-        spdlog::debug("Hash unchanged");
+        spdlog::debug("Hash unchanged, do not answer interest.");
+        // Do not send packet when nothing is new
+        return;
     }
 
     SyncResponse syncResponse = syncTree->prepareSyncResponse(hash, this->lowerLevels, this->chunkThreshold);
