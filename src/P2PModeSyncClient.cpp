@@ -263,7 +263,7 @@ void quadtree::P2PModeSyncClient::onSubtreeSyncRequestReceived(
 {
     spdlog::debug("Received Interest " + interest.getName().toUri());
     const ndn::Name& subtreeName(interest.getName());
-    SyncTree* syncTree = world.getSubtreeFromName(subtreeName);
+    SyncTree* syncTree = world.getSubtreeFromName(subtreeName, true);
 
     size_t hash = 0;
     if (subtreeName.get(subtreeName.size() - 2).toUri() == "h") {

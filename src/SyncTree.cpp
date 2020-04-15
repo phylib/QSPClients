@@ -599,7 +599,7 @@ ndn::Name SyncTree::subtreeToName(bool includeSubtreeHash) const
 
     return subtreeName;
 }
-SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName) const
+SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName, const bool& forceInflate) const
 {
 
     std::regex treeCoord("^[0123]$");
@@ -616,8 +616,10 @@ SyncTree* SyncTree::getSubtreeFromName(const ndn::Name& subtreeName) const
 
     auto* current = const_cast<SyncTree*>(this);
     for (unsigned direction : nameComponents) {
-        if (current->childs[direction] == nullptr) {
+        if (current->childs[direction] == nullptr && !forceInflate) {
             throw std::domain_error("Subtree for name " + subtreeName.toUri() + " not initialized");
+        } else if (current->childs[direction] == nullptr && forceInflate) {
+            current->inflateSubtree(current->getLevel() + 1, direction);
         }
         current = current->childs[direction];
     }

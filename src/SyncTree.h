@@ -283,7 +283,7 @@ public:
      * @param subtreeName ndn::Name of the subtree to return
      * @return The corresponding subtree
      */
-    SyncTree* getSubtreeFromName(const ndn::Name& subtreeName) const;
+    SyncTree* getSubtreeFromName(const ndn::Name& subtreeName, const bool& forceInflate=false) const;
 
     std::vector<SyncTree*> getNeighboursForRectangle(const Rectangle requestedArea);
 

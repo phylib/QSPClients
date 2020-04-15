@@ -903,6 +903,35 @@ TEST_CASE("Test NDN parts of the sync tree")
                 REQUIRE(subtree == correctSubtree);
             }
         }
+        WHEN("no subtree is inflated and the forceInflate flag is NOT set")
+        {
+            ndn::Name name("/world/0/0");
+            THEN("requesting the subtree for /world/0/0 should raise an exception")
+            {
+
+                REQUIRE_THROWS(syncTree.getSubtreeFromName(name));
+            }
+        }
+
+        WHEN("no subtree is inflated and the forceInflate flag is set")
+        {
+            ndn::Name name("/world/0/0/0");
+            ndn::Name name2("/world/0/3/0");
+            THEN("requesting the subtree for /world/0/0/0 should inflate the corresponding subtree")
+            {
+
+                SyncTree* subtree = nullptr;
+                REQUIRE_NOTHROW(subtree = syncTree.getSubtreeFromName(name, true));
+                REQUIRE(subtree->getArea() == Rectangle(Point(0, 0), Point(8, 8)));
+            }
+            THEN("requesting the subtree for /world/0/3/0 should inflate the corresponding subtree")
+            {
+
+                SyncTree* subtree = nullptr;
+                REQUIRE_NOTHROW(subtree = syncTree.getSubtreeFromName(name2, true));
+                REQUIRE(subtree->getArea() == Rectangle(Point(16, 16), Point(24, 24)));
+            }
+        }
     }
 }
 
@@ -1092,10 +1121,9 @@ TEST_CASE("Test assignment of subscriptions for P2P approach")
                 requiredRects.push_back(Rectangle(Point(40, 24), Point(48, 32)));
                 requiredRects.push_back(Rectangle(Point(40, 32), Point(48, 40)));
                 requiredRects.push_back(Rectangle(Point(40, 40), Point(48, 48)));
-                requiredRects.push_back(Rectangle(Point(16, 40), Point(24,48)));
-                requiredRects.push_back(Rectangle(Point(24, 40), Point(32,48)));
-                requiredRects.push_back(Rectangle(Point(32, 40), Point(40,48)));
-
+                requiredRects.push_back(Rectangle(Point(16, 40), Point(24, 48)));
+                requiredRects.push_back(Rectangle(Point(24, 40), Point(32, 48)));
+                requiredRects.push_back(Rectangle(Point(32, 40), Point(40, 48)));
 
                 for (const auto& neighbourSubTree : neighbourVector) {
                     for (auto iter = requiredRects.begin(); iter != requiredRects.end(); ++iter) {
@@ -1124,7 +1152,6 @@ TEST_CASE("Test assignment of subscriptions for P2P approach")
                 requiredRects.push_back(Rectangle(Point(0, 32), Point(32, 64)));
                 requiredRects.push_back(Rectangle(Point(32, 0), Point(64, 32)));
                 requiredRects.push_back(Rectangle(Point(32, 32), Point(64, 64)));
-
 
                 for (const auto& neighbourSubTree : neighbourVector) {
                     for (auto iter = requiredRects.begin(); iter != requiredRects.end(); ++iter) {
