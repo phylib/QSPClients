@@ -206,7 +206,13 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncResponseReceived(const ndn::In
     std::pair<bool, std::vector<SyncTree*>> applyResult;
     {
         std::unique_lock<std::mutex> lck(this->treeAccessMutex);
-        SyncTree* subtree = world.getSubtreeFromName(data.getFullName());
+        SyncTree* subtree = nullptr;
+        try {
+            subtree = world.getSubtreeFromName(data.getFullName());
+        } catch (std::exception ex) {
+            spdlog::error("Subtree for data packet not initialized: {}", ex.what());
+            return;
+        }
         applyResult = subtree->applySyncResponse(response);
     }
 
@@ -275,7 +281,13 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
 {
     spdlog::debug("Received Interest " + interest.getName().toUri());
     const ndn::Name& subtreeName(interest.getName());
-    SyncTree* syncTree = world.getSubtreeFromName(subtreeName);
+    SyncTree* syncTree = nullptr;
+    try {
+        syncTree = world.getSubtreeFromName(subtreeName);
+    } catch (std::exception ex){
+        spdlog::error("Subtree for interest not initialized: {}", ex.what());
+        return;
+    }
 
     size_t hash = 0;
     if (subtreeName.get(subtreeName.size() - 2).toUri() == "h") {
