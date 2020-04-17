@@ -144,7 +144,9 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
         }
 
         // Keep track of all inflated chunks
-        inflatedChunks.insert(pChunk);
+        if (inflatedChunks.find(pChunk) == inflatedChunks.end()) {
+            inflatedChunks.insert(pChunk);
+        }
 
         return pChunk;
 
@@ -166,7 +168,9 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
         }
 
         // Keep track of all inflated chunks
-        inflatedChunks.insert(pChunk);
+        if (inflatedChunks.find(pChunk) == inflatedChunks.end()) {
+            inflatedChunks.insert(pChunk);
+        }
 
         return pChunk;
     }
