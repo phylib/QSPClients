@@ -321,6 +321,8 @@ protected:
     std::map<unsigned, std::vector<size_t>> hashValuesOfNextNLevels(unsigned nextNLevels,
         std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>());
 
+    void rememberInflatedChunk(Chunk* inflatedChunk);
+
 protected:
     Rectangle area;
     unsigned level;

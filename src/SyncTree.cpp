@@ -135,17 +135,14 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
     if (finalLevel()) {
         if (data.at(index) == nullptr) {
             data.at(index) = new Chunk(Point(x, y), 0);
+            // Keep track of all inflated chunks
+            rememberInflatedChunk(data.at(index));
         }
         Chunk*& pChunk = data.at(index);
 
         // Remember changed chunk
         if (rememberChanged && std::find(changedChunks.begin(), changedChunks.end(), pChunk) == changedChunks.end()) {
             changedChunks.insert(changedChunks.end(), pChunk);
-        }
-
-        // Keep track of all inflated chunks
-        if (inflatedChunks.find(pChunk) == inflatedChunks.end()) {
-            inflatedChunks.insert(pChunk);
         }
 
         return pChunk;
@@ -165,11 +162,6 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
         // Remember changed chunk
         if (rememberChanged && std::find(changedChunks.begin(), changedChunks.end(), pChunk) == changedChunks.end()) {
             changedChunks.insert(changedChunks.end(), pChunk);
-        }
-
-        // Keep track of all inflated chunks
-        if (inflatedChunks.find(pChunk) == inflatedChunks.end()) {
-            inflatedChunks.insert(pChunk);
         }
 
         return pChunk;
@@ -704,5 +696,14 @@ std::vector<SyncTree*> SyncTree::getTreeCoverageBasedOnRectangleRecursive(
     }
 
     return currentNeighbours;
+}
+void SyncTree::rememberInflatedChunk(Chunk* inflatedChunk)
+{
+    inflatedChunks.insert(inflatedChunk);
+    SyncTree* current = this;
+    while (current->getParent() != nullptr) {
+        current = current->getParent();
+        current->rememberInflatedChunk(inflatedChunk);
+    }
 }
 }
