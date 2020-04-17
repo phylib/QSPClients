@@ -230,6 +230,8 @@ void SVS::onDataInterest(const Interest &interest) {
  * onSyncAck() - Decode version vector from data body, and merge vector.
  */
 void SVS::onSyncAck(const Data &data) {
+
+  spdlog::debug("SVS -- Received Sync Data", data.getName().toUri());
   // Extract content
   VersionVector vv_other;
   std::set<NodeID> interested_nodes;
@@ -249,6 +251,8 @@ void SVS::onSyncAck(const Data &data) {
  *  pass the data northbound.
  */
 void SVS::onDataReply(const Data &data) {
+
+  spdlog::debug("SVS -- Received Application Data", data.getName().toUri());
   const auto &n = data.getName();
   NodeID nid_other = ExtractNodeID(n);
 
@@ -272,7 +276,7 @@ void SVS::onDataReply(const Data &data) {
 void SVS::onSyncNack(const Interest &interest, const lp::Nack &nack) {
   // std::cout << "received Nack with reason "
   //           << " for interest " << interest << std::endl;
-  spdlog::debug("Received NACK for Sync Interest, reason: {}", nack.getReason());
+  spdlog::debug("SVS -- Received NACK for Sync Interest, reason: {}", nack.getReason());
 }
 
 /**
@@ -280,7 +284,7 @@ void SVS::onSyncNack(const Interest &interest, const lp::Nack &nack) {
  */
 void SVS::onSyncTimeout(const Interest &interest) {
   // std::cout << "Timeout " << interest << std::endl;
-    spdlog::debug("Received Timeout for Sync Interest");
+    spdlog::debug("SVS -- Received Timeout for Sync Interest");
 }
 
 /**
@@ -289,7 +293,7 @@ void SVS::onSyncTimeout(const Interest &interest) {
 void SVS::onDataNack(const Interest &interest, const lp::Nack &nack) {
   // std::cout << "received Nack with reason "
   //           << " for interest " << interest << std::endl;
-    spdlog::debug("Received NACK for Data Interest, reason: {}", nack.getReason());
+    spdlog::debug("SVS -- Received NACK for Data Interest, reason: {}", nack.getReason());
 }
 
 /**
@@ -297,7 +301,7 @@ void SVS::onDataNack(const Interest &interest, const lp::Nack &nack) {
  */
 void SVS::onDataTimeout(const Interest &interest) {
   // std::cout << "Timeout " << interest << std::endl;
-    spdlog::debug("Received Timeout for data Interest");
+    spdlog::debug("SVS -- Received Timeout for data Interest");
 }
 
 /**
