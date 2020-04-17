@@ -321,8 +321,6 @@ protected:
     std::map<unsigned, std::vector<size_t>> hashValuesOfNextNLevels(unsigned nextNLevels,
         std::map<unsigned, std::vector<size_t>> hashValues = std::map<unsigned, std::vector<size_t>>());
 
-    void rememberInflatedChunk(Chunk* inflatedChunk);
-
 protected:
     Rectangle area;
     unsigned level;
@@ -332,8 +330,6 @@ protected:
     std::size_t currentHash;
     std::pair<std::size_t, std::vector<Chunk*>> storedChanges;
     std::vector<Chunk*> changedChunks;
-
-    std::unordered_set<Chunk*> inflatedChunks;
 
     std::vector<SyncTree*> childs;
     std::vector<Chunk*> data;

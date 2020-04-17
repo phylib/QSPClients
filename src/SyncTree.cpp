@@ -135,8 +135,6 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
     if (finalLevel()) {
         if (data.at(index) == nullptr) {
             data.at(index) = new Chunk(Point(x, y), 0);
-            // Keep track of all inflated chunks
-            rememberInflatedChunk(data.at(index));
         }
         Chunk*& pChunk = data.at(index);
 
@@ -462,12 +460,13 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
     if (changeResponse.first) { // If the given hash is known
 
         if (getLevel() + 1 > getMaxLevel()
-            || nextNLevels <= 1) { // When we are in the final level, changes need to be returned
+            || nextNLevels <= 1) {
+            // When we are in the final level, changes need to be returned
             syncRequestResponse.changeReponse = changeResponse;
             syncRequestResponse.containsChanges = true;
 
-        } else if (changeResponse.second.size()
-            > threshold) { // Otherwise, if more changes then the threshold, return hashes
+        } else if (changeResponse.second.size() > threshold) {
+            // Otherwise, if more changes then the threshold, return hashes
             NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
             syncRequestResponse.containsChanges = false;
             syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
@@ -479,11 +478,11 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
     } else { // If the given hash is unknown, all chunks need to be enumerated
 
         unsigned remainingLevels = getMaxLevel() - (getLevel() - 1);
-        // allChunks = pow(pow(2, remainingLevels), 2);
-        unsigned allChunks = inflatedChunks.size();
+        unsigned allChunks = pow(pow(2, remainingLevels), 2);
+        //        unsigned allChunks = this->countInflatedChunks();
 
-        if (allChunks > threshold) { // If there are more chunks than the threshold, return lower level hashes
-            NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);
+        if (allChunks > threshold * 4) { // If there are more chunks than the threshold, return lower level hashes
+            NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels * 2, since);
             syncRequestResponse.containsChanges = false;
             syncRequestResponse.nextNLevelsResponse = nextNLevelResponse;
         } else {
@@ -697,13 +696,5 @@ std::vector<SyncTree*> SyncTree::getTreeCoverageBasedOnRectangleRecursive(
 
     return currentNeighbours;
 }
-void SyncTree::rememberInflatedChunk(Chunk* inflatedChunk)
-{
-    inflatedChunks.insert(inflatedChunk);
-    SyncTree* current = this;
-    while (current->getParent() != nullptr) {
-        current = current->getParent();
-        current->rememberInflatedChunk(inflatedChunk);
-    }
-}
+
 }
