@@ -1,5 +1,6 @@
 #pragma once
 
+#include "spdlog/spdlog.h"
 #include <deque>
 #include <iostream>
 #include <mutex>
@@ -42,9 +43,13 @@ namespace svs {
 
         void onDataReply(const Data& data);
 
-        void onNack(const Interest& interest, const lp::Nack& nack);
+        void onSyncNack(const Interest& interest, const lp::Nack& nack);
 
-        void onTimeout(const Interest& interest);
+        void onSyncTimeout(const Interest& interest);
+
+        void onDataNack(const Interest& interest, const lp::Nack& nack);
+
+        void onDataTimeout(const Interest& interest);
 
         void retxSyncInterest();
 

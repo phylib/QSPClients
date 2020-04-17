@@ -103,8 +103,8 @@ void SVS::asyncSendPacket() {
 
           m_face.expressInterest(*packet->interest,
                                  std::bind(&SVS::onDataReply, this, _2),
-                                 std::bind(&SVS::onNack, this, _1, _2),
-                                 std::bind(&SVS::onTimeout, this, _1));
+                                 std::bind(&SVS::onDataNack, this, _1, _2),
+                                 std::bind(&SVS::onDataTimeout, this, _1));
           pending_data_interest.push_back(packet);
           // printf("Send data interest\n");
         }
@@ -113,8 +113,8 @@ void SVS::asyncSendPacket() {
         else if (n.compare(0, 3, kSyncNotifyPrefix) == 0) {
           m_face.expressInterest(*packet->interest,
                                  std::bind(&SVS::onSyncAck, this, _2),
-                                 std::bind(&SVS::onNack, this, _1, _2),
-                                 std::bind(&SVS::onTimeout, this, _1));
+                                 std::bind(&SVS::onSyncNack, this, _1, _2),
+                                 std::bind(&SVS::onSyncTimeout, this, _1));
           fflush(stdout);
         }
 
@@ -269,16 +269,35 @@ void SVS::onDataReply(const Data &data) {
 /**
  * onNack() - Print error msg from NFD.
  */
-void SVS::onNack(const Interest &interest, const lp::Nack &nack) {
+void SVS::onSyncNack(const Interest &interest, const lp::Nack &nack) {
   // std::cout << "received Nack with reason "
   //           << " for interest " << interest << std::endl;
+  spdlog::debug("Received NACK for Sync Interest, reason: {}", nack.getReason());
 }
 
 /**
  * onTimeout() - Print timeout msg.
  */
-void SVS::onTimeout(const Interest &interest) {
+void SVS::onSyncTimeout(const Interest &interest) {
   // std::cout << "Timeout " << interest << std::endl;
+    spdlog::debug("Received Timeout for Sync Interest");
+}
+
+/**
+ * onNack() - Print error msg from NFD.
+ */
+void SVS::onDataNack(const Interest &interest, const lp::Nack &nack) {
+  // std::cout << "received Nack with reason "
+  //           << " for interest " << interest << std::endl;
+    spdlog::debug("Received NACK for Data Interest, reason: {}", nack.getReason());
+}
+
+/**
+ * onTimeout() - Print timeout msg.
+ */
+void SVS::onDataTimeout(const Interest &interest) {
+  // std::cout << "Timeout " << interest << std::endl;
+    spdlog::debug("Received Timeout for data Interest");
 }
 
 /**
@@ -294,7 +313,7 @@ void SVS::retxSyncInterest() {
 /**
  * sendSyncInterest() - Add one sync interest to queue. Called by
  *  SVS::retxSyncInterest(), or directly. Because this function is
- *  also called upon new msg via PublishMsg(), the shared data 
+ *  also called upon new msg via PublishMsg(), the shared data
  *  structures could cause race conditions.
  */
 void SVS::sendSyncInterest() {
