@@ -143,6 +143,9 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
             changedChunks.insert(changedChunks.end(), pChunk);
         }
 
+        // Keep track of all inflated chunks
+        inflatedChunks.insert(pChunk);
+
         return pChunk;
 
     } else {
@@ -161,6 +164,9 @@ Chunk* SyncTree::inflateChunk(unsigned x, unsigned y, bool rememberChanged)
         if (rememberChanged && std::find(changedChunks.begin(), changedChunks.end(), pChunk) == changedChunks.end()) {
             changedChunks.insert(changedChunks.end(), pChunk);
         }
+
+        // Keep track of all inflated chunks
+        inflatedChunks.insert(pChunk);
 
         return pChunk;
     }
@@ -477,7 +483,8 @@ SyncRequestResponse SyncTree::syncRequest(size_t since, unsigned nextNLevels, un
     } else { // If the given hash is unknown, all chunks need to be enumerated
 
         unsigned remainingLevels = getMaxLevel() - (getLevel() - 1);
-        unsigned allChunks = pow(pow(2, remainingLevels), 2);
+        // allChunks = pow(pow(2, remainingLevels), 2);
+        unsigned allChunks = inflatedChunks.size();
 
         if (allChunks > threshold) { // If there are more chunks than the threshold, return lower level hashes
             NextNLevelsResponseType nextNLevelResponse = hashValuesOfNextNLevels(nextNLevels, since);

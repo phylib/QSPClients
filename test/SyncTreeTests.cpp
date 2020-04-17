@@ -777,11 +777,17 @@ TEST_CASE("Correctly create and apply SyncResponse message")
             originalTree.change(1, 1);
             originalTree.change(2, 6);
 
+            for (unsigned i = 0; i < 50; i++) {
+                for (unsigned j = 0; j < 50; j++) {
+                    originalTree.change(i, j);
+                }
+            }
+
             originalTree.reHash();
 
             SyncResponse syncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 100);
 
-            THEN("The sync response has to contain the hash values of the lower levels")
+            THEN("When the threshold is below the number of changed chunks, the sync response has to contain the hash values of the lower levels")
             {
                 REQUIRE(!syncResponse.hashknown());
                 REQUIRE(!syncResponse.chunkdata());
@@ -792,7 +798,7 @@ TEST_CASE("Correctly create and apply SyncResponse message")
                 SyncResponse largeSyncResponse = originalTree.prepareSyncResponse(clonedTree.getHash(), 3, 65 * 65);
                 REQUIRE(!largeSyncResponse.hashknown());
                 REQUIRE(largeSyncResponse.chunkdata());
-                REQUIRE(largeSyncResponse.chunks_size() == 5);
+                REQUIRE(largeSyncResponse.chunks_size() == 50 * 50);
             }
         }
 
