@@ -24,25 +24,27 @@ std::vector<std::pair<unsigned, std::vector<quadtree::Chunk>>> ChunkFileReader::
         std::vector<quadtree::Chunk> changedChunks;
         boost::split(chunkStrings, item.at(1), boost::is_any_of(";"));
 
-        for (std::string& chunkStr : chunkStrings) {
+        if (item.size() == 1 || !item.at(1).empty()) {
+            for (std::string& chunkStr : chunkStrings) {
 
-            std::size_t splitPos = chunkStr.find_first_of(',');
-            quadtree::Point chunkPos(
-                std::stoi(chunkStr.substr(0, splitPos)), std::stoi(chunkStr.substr(splitPos + 1, chunkStr.length())));
-            quadtree::Chunk chunk(chunkPos, 0);
-            changedChunks.insert(changedChunks.end(), chunk);
+                std::size_t splitPos = chunkStr.find_first_of(',');
+                quadtree::Point chunkPos(std::stoi(chunkStr.substr(0, splitPos)),
+                    std::stoi(chunkStr.substr(splitPos + 1, chunkStr.length())));
+                quadtree::Chunk chunk(chunkPos, 0);
+                changedChunks.insert(changedChunks.end(), chunk);
 
-            if (chunk.pos.x < minX) {
-                minX = chunk.pos.x;
-            }
-            if (chunk.pos.x > maxX) {
-                maxX = chunk.pos.x;
-            }
-            if (chunk.pos.y < minY) {
-                minY = chunk.pos.y;
-            }
-            if (chunk.pos.y > maxY) {
-                maxY = chunk.pos.y;
+                if (chunk.pos.x < minX) {
+                    minX = chunk.pos.x;
+                }
+                if (chunk.pos.x > maxX) {
+                    maxX = chunk.pos.x;
+                }
+                if (chunk.pos.y < minY) {
+                    minY = chunk.pos.y;
+                }
+                if (chunk.pos.y > maxY) {
+                    maxY = chunk.pos.y;
+                }
             }
         }
         changesPerTick.insert(changesPerTick.end(),
