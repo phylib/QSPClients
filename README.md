@@ -7,17 +7,20 @@ as software artifacts for the Paper _Philipp Moll, Selina Isak, Hermann Hellwagn
 ## Installation
 
 In order to compile and run the clients, the NDN libraries must be installed. To do so, please use the `install.sh`
-[script from MiniNDN's GitHub repository](https://github.com/named-data/mini-ndn/blob/master/install.sh). 
+[script from MiniNDN's GitHub repository](https://github.com/named-data/mini-ndn/blob/master/install.sh).
 
 Furthermore, the clients require the Protocol Buffers Library and Spdlog installed. To install these dependencies,
 follow the following instructions.
 
 ```bash
+sudo apt-get -y install cmake
+
 mkdir -p dependencies
 pushd dependencies
 
 git clone https://github.com/catchorg/Catch2.git
 pushd Catch2
+git checkout v2.9.2
 cmake -Bbuild -H. -DBUILD_TESTING=OFF
 sudo cmake --build build/ --target install
 popd
@@ -34,8 +37,6 @@ popd
 popd
 
 sudo ldconfig
-
-sudo apt-get -y install cmake
 
 popd
 ```
