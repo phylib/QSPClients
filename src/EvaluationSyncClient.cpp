@@ -15,7 +15,7 @@ using namespace std::literals;
 namespace po = boost::program_options;
 
 void storeParameters(std::string logDir, std::string responsibilityArea, int treeSize, int requestLevel,
-    std::string traceFile, std::string prefix, int chunkThreshold, int levelDifference)
+    std::string traceFile, std::string prefix, int chunkThreshold, int levelDifference, int syncRequestInterval)
 {
     std::ofstream logfile = std::ofstream(logDir + "/" + responsibilityArea + "_settings.txt");
     logfile << "[Parameters]" << std::endl;
@@ -27,6 +27,7 @@ void storeParameters(std::string logDir, std::string responsibilityArea, int tre
     logfile << "prefix:\t" << prefix << std::endl;
     logfile << "chunkThreshold:\t" << chunkThreshold << std::endl;
     logfile << "levelDifference:\t" << levelDifference << std::endl;
+    logfile << "syncRequestInterval:\t" << syncRequestInterval << std::endl;
     logfile.flush();
     logfile.close();
 }
@@ -47,7 +48,8 @@ int main(int argc, char* argv[])
         ("traceFile", po::value<std::string>()->default_value("../QuadTreeRMAComparison/max_distance/ChunkChanges-very-distributed.csv"), "File where chunk changes are located")
         ("prefix", po::value<std::string>()->default_value("/world"), "Application specific prefix")
         ("levelDifference", po::value<int>(&opt)->default_value(2), "How many levels to go deeper for respones with high number of chunk changes")
-        ("chunkThreshold", po::value<int>(&opt)->default_value(200), "The maximum amount of chunks included in a sync response");
+        ("chunkThreshold", po::value<int>(&opt)->default_value(200), "The maximum amount of chunks included in a sync response")
+        ("syncRequestInterval", po::value<int>(&opt)->default_value(500), "Interval in which sync requests are sent");
     /* clang-format on */
 
     po::variables_map vm;
@@ -82,9 +84,10 @@ int main(int argc, char* argv[])
     std::string prefix = vm["prefix"].as<std::string>();
     int chunkThreshold = vm["chunkThreshold"].as<int>();
     int levelDifference = vm["levelDifference"].as<int>();
+    int syncRequestInterval = vm["syncRequestInterval"].as<int>();
 
     storeParameters(logDir, responsibilityAreaString, treeSize, initialRequestLevel, traceFile, prefix, chunkThreshold,
-        levelDifference);
+        levelDifference, syncRequestInterval);
 
     // Parse CSV File
     auto changesOverTime = ChunkFileReader::readChangesOverTime(traceFile, treeSize);
@@ -95,7 +98,7 @@ int main(int argc, char* argv[])
         quadtree::Point(std::stoi(coordinates[2]), std::stoi(coordinates[3])));
 
     quadtree::ServerModeSyncClient client(prefix, world, responsibility, initialRequestLevel, changesOverTime,
-        logDir + "/", responsibilityAreaString, levelDifference, chunkThreshold);
+        logDir + "/", responsibilityAreaString, levelDifference, chunkThreshold, syncRequestInterval);
 
     // Start Sync Client
     try {

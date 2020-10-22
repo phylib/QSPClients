@@ -99,8 +99,7 @@ void quadtree::ServerModeSyncClient::applyChangesOverTime()
 void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree* subtree)
 {
 
-    auto nextRequest
-        = std::chrono::system_clock::now() + std::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS);
+    auto nextRequest = std::chrono::system_clock::now() + std::chrono::milliseconds(this->syncRequestInterval);
     while (this->isRunning) {
 
         // Construct name and issue Interest
@@ -117,7 +116,7 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
         ndn::Interest subtreeRequest(subtreeRequestName);
         subtreeRequest.setMustBeFresh(true);
         //        subtreeRequest.setCanBePrefix(false);
-        subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(ServerModeSyncClient::SLEEP_TIME_MS));
+        subtreeRequest.setInterestLifetime(boost::chrono::milliseconds(this->syncRequestInterval));
 
         spdlog::debug("Express Interest for " + subtreeRequestName.toUri());
         this->face.expressInterest(subtreeRequest,
@@ -125,7 +124,7 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
             std::bind(&ServerModeSyncClient::onNack, this, _1, _2),
             std::bind(&ServerModeSyncClient::onTimeout, this, _1));
 
-        long sleep_time = ServerModeSyncClient::SLEEP_TIME_MS;
+        long sleep_time = this->syncRequestInterval;
         // Calculate how long the response to the last interest took
         {
             std::unique_lock<std::mutex> lck(this->runtimeMemoryMutex);
@@ -134,14 +133,16 @@ void quadtree::ServerModeSyncClient::synchronizeRemoteRegion(quadtree::SyncTree*
                 spdlog::trace("Received sync data " + std::to_string(duration) + "ms after publishing");
                 // We expect the interest taking about 100ms, if it takes significantly longer, try correcting the time
                 // when next interest is sent
-                if (duration > 200 && duration < 500) {
-                    spdlog::trace("Received sync response in " + std::to_string(duration)
-                        + "ms -- Adapting Interest issuing time");
-                    sleep_time = 200; // Just a hack
-                } else if (duration > 100) {
-                    spdlog::trace("Received sync response in " + std::to_string(duration)
-                        + "ms -- Adapting Interest issuing time");
-                    sleep_time = 400;
+                if (SLEEP_TIME_MS == this->syncRequestInterval) {
+                    if (duration > 200 && duration < 500) {
+                        spdlog::trace("Received sync response in " + std::to_string(duration)
+                            + "ms -- Adapting Interest issuing time");
+                        sleep_time = 200; // Just a hack
+                    } else if (duration > 100) {
+                        spdlog::trace("Received sync response in " + std::to_string(duration)
+                            + "ms -- Adapting Interest issuing time");
+                        sleep_time = 400;
+                    }
                 }
                 received_data_runtimes.erase(subtreeNameNoHash);
             }
@@ -284,7 +285,7 @@ void quadtree::ServerModeSyncClient::onSubtreeSyncRequestReceived(
     SyncTree* syncTree = nullptr;
     try {
         syncTree = world.getSubtreeFromName(subtreeName);
-    } catch (std::exception ex){
+    } catch (std::exception ex) {
         spdlog::error("Subtree for interest not initialized: {}", ex.what());
         return;
     }
